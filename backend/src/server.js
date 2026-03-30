@@ -32,6 +32,8 @@ app.use("/api/documents", documentsRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(env.port, () => {
-  console.log(`Server running on http://localhost:${env.port}`);
+const port = Number(env.port) || 3000;
+
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server running on port ${port}`);
 });
