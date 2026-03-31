@@ -57,9 +57,25 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <section className="grid gap-5 xl:grid-cols-[1.45fr_0.75fr]">
-        <div className="rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
-          <KpiGrid kpis={kpis} />
+      <section className="grid gap-5 xl:grid-cols-[1.35fr_0.85fr]">
+        <div className="min-w-0 rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
+          <div className="mb-4">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs">
+              Vue d’ensemble
+            </p>
+
+            <h2 className="mt-1 text-2xl font-bold text-slate-950 sm:text-3xl">
+              Dashboard principal
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Les indicateurs clés de ton activité en un coup d’œil.
+            </p>
+          </div>
+
+          <div className="overflow-hidden rounded-[22px]">
+            <KpiGrid kpis={kpis} />
+          </div>
         </div>
 
         <div className="rounded-[24px] border border-blue-100/70 bg-[linear-gradient(180deg,rgba(239,246,255,0.92),rgba(248,250,252,0.88))] p-4 shadow-[0_16px_40px_rgba(37,99,235,0.08)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
@@ -109,6 +125,7 @@ export default function DashboardPage() {
             <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs">
               Activités
             </p>
+
             <h3 className="mt-1 text-xl font-bold text-slate-950 sm:text-2xl">
               Récentes
             </h3>
@@ -149,6 +166,7 @@ export default function DashboardPage() {
             <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs">
               Charges
             </p>
+
             <h3 className="mt-1 text-xl font-bold text-slate-950 sm:text-2xl">
               Récentes
             </h3>

@@ -44,57 +44,59 @@ export default function Topbar({ activePage, onOpenMenu }) {
   });
 
   return (
-    <header className="rounded-[28px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.92),rgba(237,243,250,0.86))] px-4 py-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:px-6 sm:py-6 lg:px-8">
-      <div className="mb-4 flex items-center justify-between gap-3 lg:hidden">
-        <button
-          type="button"
-          onClick={onOpenMenu}
-          className="inline-flex items-center gap-2 rounded-2xl border border-white/60 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-800 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
-        >
-          <span className="text-lg leading-none">☰</span>
-          Menu
-        </button>
+    <div className="sticky top-0 z-30 pb-3 pt-1">
+      <header className="rounded-[24px] border border-white/60 bg-[linear-gradient(180deg,rgba(248,250,252,0.94),rgba(237,243,250,0.90))] px-4 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:px-6 sm:py-5 lg:rounded-[28px] lg:px-8">
+        <div className="mb-4 flex items-center justify-between gap-3 lg:hidden">
+          <button
+            type="button"
+            onClick={onOpenMenu}
+            className="inline-flex items-center gap-2 rounded-2xl border border-white/60 bg-white/75 px-4 py-2 text-sm font-semibold text-slate-800 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
+          >
+            <span className="text-lg leading-none">☰</span>
+            Menu
+          </button>
 
-        <div className="inline-flex rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-[11px] font-semibold text-blue-800">
-          AIE PRO
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-3xl">
-          <div className="hidden lg:inline-flex items-center gap-2 rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-800">
-            AIE PRO • Plateforme intelligente multi-secteurs
+          <div className="inline-flex rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-[11px] font-semibold text-blue-800">
+            AIE PRO
           </div>
-
-          <h1 className="mt-1 text-3xl font-bold leading-tight tracking-tight text-slate-950 sm:text-4xl lg:mt-4 lg:text-5xl">
-            {getPageTitle(activePage)}
-          </h1>
-
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-            {getPageDescription(activePage)}
-          </p>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-          <div className="flex min-w-0 flex-col justify-center rounded-2xl border border-white/60 bg-white/55 px-4 py-4 shadow-[0_8px_30px_rgba(15,23,42,0.05)] backdrop-blur-md sm:min-w-[190px] sm:px-5">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">
-              Aujourd’hui
-            </p>
-            <p className="mt-2 text-base font-semibold leading-6 text-slate-900 sm:text-lg">
-              {todayLabel}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
+            <div className="hidden lg:inline-flex items-center gap-2 rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-800">
+              AIE PRO • Plateforme intelligente multi-secteurs
+            </div>
+
+            <h1 className="mt-1 text-3xl font-bold leading-tight tracking-tight text-slate-950 sm:text-4xl lg:mt-4 lg:text-5xl">
+              {getPageTitle(activePage)}
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
+              {getPageDescription(activePage)}
             </p>
           </div>
 
-          <div className="flex min-w-0 flex-col justify-center rounded-2xl border border-white/60 bg-white/55 px-4 py-4 shadow-[0_8px_30px_rgba(15,23,42,0.05)] backdrop-blur-md sm:min-w-[190px] sm:px-5">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">
-              Statut
-            </p>
-            <p className="mt-2 text-base font-semibold leading-6 text-emerald-600 sm:text-lg">
-              Opérationnel
-            </p>
+          <div className="hidden gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-1">
+            <div className="flex min-w-0 flex-col justify-center rounded-2xl border border-white/60 bg-white/55 px-4 py-4 shadow-[0_8px_30px_rgba(15,23,42,0.05)] backdrop-blur-md sm:min-w-[190px] sm:px-5">
+              <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">
+                Aujourd’hui
+              </p>
+              <p className="mt-2 text-base font-semibold leading-6 text-slate-900 sm:text-lg">
+                {todayLabel}
+              </p>
+            </div>
+
+            <div className="flex min-w-0 flex-col justify-center rounded-2xl border border-white/60 bg-white/55 px-4 py-4 shadow-[0_8px_30px_rgba(15,23,42,0.05)] backdrop-blur-md sm:min-w-[190px] sm:px-5">
+              <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">
+                Statut
+              </p>
+              <p className="mt-2 text-base font-semibold leading-6 text-emerald-600 sm:text-lg">
+                Opérationnel
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
   );
 }

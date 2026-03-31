@@ -38,7 +38,7 @@ export default function AppShell({
               activePage={activePage}
               onOpenMenu={() => setMobileMenuOpen(true)}
             />
-            <main className="mt-4 sm:mt-5">{children}</main>
+            <main className="mt-3 sm:mt-4">{children}</main>
           </div>
         </div>
       </div>
