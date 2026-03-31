@@ -18,7 +18,7 @@ export default function AppShell({
 
   return (
     <div className="min-h-screen bg-[#E7EDF5] text-slate-900">
-      <div className="relative min-h-screen overflow-hidden">
+      <div className="relative min-h-screen">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.10),transparent_24%),radial-gradient(circle_at_top_right,rgba(15,23,42,0.08),transparent_22%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.08),transparent_28%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22),rgba(15,23,42,0.05))]" />
         <div className="absolute top-[-70px] right-[-50px] h-[260px] w-[260px] rounded-full bg-blue-200/35 blur-3xl" />
