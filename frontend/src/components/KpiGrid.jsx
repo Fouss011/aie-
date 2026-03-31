@@ -58,12 +58,12 @@ export default function KpiGrid({ kpis = {} }) {
   ];
 
   return (
-    <section>
+    <section className="w-full overflow-x-hidden">
       <div className="grid gap-3 min-[380px]:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {cards.map((card) => (
           <div
             key={card.title}
-            className={`rounded-[22px] border border-white/50 bg-white/60 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur-md transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(15,23,42,0.08)] sm:rounded-[24px] sm:p-5 ${
+            className={`min-w-0 rounded-[22px] border border-white/50 bg-white/60 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur-md transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(15,23,42,0.08)] sm:rounded-[24px] sm:p-5 ${
               card.full ? "min-[380px]:col-span-2 xl:col-span-1 2xl:col-span-1" : ""
             }`}
           >

@@ -105,9 +105,9 @@ export default function ChatBox() {
         />
       )}
 
-      <div className="fixed bottom-4 right-4 z-50 left-4 flex justify-end sm:bottom-5 sm:right-5 sm:left-auto">
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] sm:justify-end sm:px-5 sm:pb-5">
         {isOpen ? (
-          <div className="relative z-50 flex h-[78vh] w-full max-w-[420px] flex-col overflow-hidden rounded-[28px] border border-slate-700/40 bg-[linear-gradient(180deg,rgba(15,23,42,0.98),rgba(30,41,59,0.97))] shadow-[0_30px_80px_rgba(15,23,42,0.35)] backdrop-blur-2xl sm:h-[620px] sm:max-h-[calc(100vh-110px)] sm:rounded-[30px]">
+          <div className="pointer-events-auto relative flex h-[78vh] w-full max-w-[420px] flex-col overflow-hidden rounded-[28px] border border-slate-700/40 bg-[linear-gradient(180deg,rgba(15,23,42,0.98),rgba(30,41,59,0.97))] shadow-[0_30px_80px_rgba(15,23,42,0.35)] backdrop-blur-2xl sm:h-[620px] sm:max-h-[calc(100vh-110px)] sm:rounded-[30px]">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
@@ -178,7 +178,7 @@ export default function ChatBox() {
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="inline-flex min-h-[54px] items-center gap-3 rounded-full border border-slate-700/30 bg-[linear-gradient(180deg,#0B1F3A,#0F172A)] px-5 py-3 text-sm font-medium text-white shadow-[0_18px_40px_rgba(15,23,42,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(15,23,42,0.34)] sm:min-h-[60px] sm:px-6 sm:py-4 sm:text-base"
+            className="pointer-events-auto inline-flex h-[54px] w-full max-w-[320px] items-center justify-center gap-3 rounded-full border border-slate-700/30 bg-[linear-gradient(180deg,#0B1F3A,#0F172A)] px-5 text-sm font-medium text-white shadow-[0_18px_40px_rgba(15,23,42,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(15,23,42,0.34)] sm:h-[56px] sm:w-auto sm:max-w-none sm:px-6 sm:text-base"
           >
             <span className="h-3 w-3 rounded-full bg-sky-400" />
             Ouvrir AIE Copilot
