@@ -1,0 +1,130 @@
+import { useState } from "react";
+import { signInWithEmail, signUpWithEmail } from "../lib/auth";
+
+export default function AuthScreen() {
+  const [mode, setMode] = useState("login");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [errorText, setErrorText] = useState("");
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setLoading(true);
+    setMessage("");
+    setErrorText("");
+
+    try {
+      if (mode === "signup") {
+        await signUpWithEmail({ fullName, email, password });
+        setMessage("Compte créé. Vérifie ton email si une confirmation est demandée.");
+      } else {
+        await signInWithEmail({ email, password });
+      }
+    } catch (error) {
+      setErrorText(error.message || "Une erreur est survenue.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#E7EDF5] px-4 py-8">
+      <div className="mx-auto max-w-md rounded-[30px] border border-white/60 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
+        <div className="mb-6">
+          <div className="inline-flex rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-800">
+            AIE PRO
+          </div>
+
+          <h1 className="mt-4 text-3xl font-bold text-slate-950">
+            {mode === "login" ? "Connexion" : "Créer un compte"}
+          </h1>
+
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Accède à ton espace structure et pilote tes données de façon sécurisée.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === "signup" && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                Nom complet
+              </label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-400"
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-400"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Mot de passe
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-400"
+            />
+          </div>
+
+          {message && (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              {message}
+            </div>
+          )}
+
+          {errorText && (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {errorText}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-2xl bg-[#0B1F3A] px-4 py-3 text-sm font-semibold text-white"
+          >
+            {loading ? "Patiente..." : mode === "login" ? "Se connecter" : "Créer mon compte"}
+          </button>
+        </form>
+
+        <div className="mt-5 text-center text-sm text-slate-600">
+          {mode === "login" ? "Pas encore de compte ?" : "Tu as déjà un compte ?"}{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setMode(mode === "login" ? "signup" : "login");
+              setMessage("");
+              setErrorText("");
+            }}
+            className="font-semibold text-blue-700 hover:underline"
+          >
+            {mode === "login" ? "Créer un compte" : "Se connecter"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

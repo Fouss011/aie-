@@ -1,7 +1,9 @@
-function getPageTitle(activePage) {
+import { useAuth } from "../../context/AuthProvider";
+
+function getPageTitle(activePage, activeStructure) {
   switch (activePage) {
     case "dashboard":
-      return "Dashboard";
+      return activeStructure?.name || "Ma structure";
     case "activities":
       return "Activités";
     case "charges":
@@ -17,10 +19,12 @@ function getPageTitle(activePage) {
   }
 }
 
-function getPageDescription(activePage) {
+function getPageDescription(activePage, activeStructure) {
   switch (activePage) {
     case "dashboard":
-      return "Vue rapide de la situation actuelle.";
+      return activeStructure?.sector
+        ? `Espace principal de ${activeStructure.name}, structure du secteur ${activeStructure.sector}.`
+        : "Vue rapide de la situation actuelle de la structure.";
     case "activities":
       return "Enregistre et consulte les activités de la structure.";
     case "charges":
@@ -37,6 +41,8 @@ function getPageDescription(activePage) {
 }
 
 export default function Topbar({ activePage, onOpenMenu }) {
+  const { activeStructure } = useAuth();
+
   const todayLabel = new Date().toLocaleDateString("fr-FR", {
     day: "2-digit",
     month: "long",
@@ -45,7 +51,6 @@ export default function Topbar({ activePage, onOpenMenu }) {
 
   return (
     <>
-      {/* Espace réservé pour éviter que le contenu passe sous la barre fixe sur mobile */}
       <div className="h-[210px] sm:h-[220px] lg:hidden" />
 
       <div className="fixed left-0 right-0 top-0 z-40 px-3 pt-3 lg:sticky lg:top-0 lg:z-30 lg:px-0 lg:pt-0">
@@ -74,11 +79,11 @@ export default function Topbar({ activePage, onOpenMenu }) {
               </div>
 
               <h1 className="mt-1 break-words text-3xl font-bold leading-tight tracking-tight text-slate-950 sm:text-4xl lg:mt-4 lg:text-5xl">
-                {getPageTitle(activePage)}
+                {getPageTitle(activePage, activeStructure)}
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-                {getPageDescription(activePage)}
+                {getPageDescription(activePage, activeStructure)}
               </p>
             </div>
 

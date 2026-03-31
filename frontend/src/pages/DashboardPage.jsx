@@ -3,8 +3,11 @@ import { fetchSales } from "../api/salesApi";
 import { fetchExpenses } from "../api/expensesApi";
 import { fetchDashboardKpis } from "../api/dashboardApi";
 import KpiGrid from "../components/KpiGrid";
+import { useAuth } from "../context/AuthProvider";
 
 export default function DashboardPage() {
+  const { activeStructure, logout } = useAuth();
+
   const [sales, setSales] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [kpis, setKpis] = useState(null);
@@ -29,6 +32,14 @@ export default function DashboardPage() {
       setError(err?.message || "Une erreur est survenue lors du chargement.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Erreur déconnexion :", err);
     }
   }
 
@@ -57,6 +68,72 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
+      <section className="rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs">
+              Structure active
+            </p>
+
+            <h2 className="mt-1 break-words text-2xl font-bold text-slate-950 sm:text-3xl">
+              {activeStructure?.name || "Ma structure"}
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Espace principal de la structure connectée.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm font-medium text-slate-700 shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
+          >
+            Déconnexion
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
+            <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">
+              Nom
+            </p>
+            <p className="mt-2 text-sm font-semibold text-slate-900">
+              {activeStructure?.name || "—"}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
+            <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">
+              Secteur
+            </p>
+            <p className="mt-2 text-sm font-semibold text-slate-900">
+              {activeStructure?.sector || "Non renseigné"}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
+            <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">
+              Localisation
+            </p>
+            <p className="mt-2 text-sm font-semibold text-slate-900">
+              {[activeStructure?.city, activeStructure?.country]
+                .filter(Boolean)
+                .join(", ") || "Non renseignée"}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
+            <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">
+              Identifiant
+            </p>
+            <p className="mt-2 break-all text-sm font-semibold text-slate-900">
+              {activeStructure?.slug || "—"}
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="grid gap-5 xl:grid-cols-[1.35fr_0.85fr]">
         <div className="min-w-0 rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
           <div className="mb-4">
