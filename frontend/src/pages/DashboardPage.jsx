@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="rounded-[28px] border border-white/45 bg-[linear-gradient(180deg,rgba(248,250,252,0.90),rgba(241,245,249,0.84))] p-10 text-center text-slate-600 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+      <div className="rounded-[24px] border border-white/45 bg-[linear-gradient(180deg,rgba(248,250,252,0.90),rgba(241,245,249,0.84))] p-8 text-center text-slate-600 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[28px] sm:p-10">
         Chargement...
       </div>
     );
@@ -49,50 +49,50 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="rounded-[28px] border border-red-200/80 bg-[linear-gradient(180deg,rgba(254,242,242,0.95),rgba(255,255,255,0.88))] p-5 text-red-700 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+      <div className="rounded-[24px] border border-red-200/80 bg-[linear-gradient(180deg,rgba(254,242,242,0.95),rgba(255,255,255,0.88))] p-5 text-red-700 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[28px]">
         {error}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <section className="grid gap-6 xl:grid-cols-[1.45fr_0.75fr]">
-        <div className="rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+    <div className="space-y-5 sm:space-y-6">
+      <section className="grid gap-5 xl:grid-cols-[1.45fr_0.75fr]">
+        <div className="rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
           <KpiGrid kpis={kpis} />
         </div>
 
-        <div className="rounded-[30px] border border-blue-100/70 bg-[linear-gradient(180deg,rgba(239,246,255,0.92),rgba(248,250,252,0.88))] p-5 shadow-[0_16px_40px_rgba(37,99,235,0.08)] backdrop-blur-xl">
-          <p className="text-xs uppercase tracking-[0.24em] text-blue-700">
+        <div className="rounded-[24px] border border-blue-100/70 bg-[linear-gradient(180deg,rgba(239,246,255,0.92),rgba(248,250,252,0.88))] p-4 shadow-[0_16px_40px_rgba(37,99,235,0.08)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
+          <p className="text-[11px] uppercase tracking-[0.24em] text-blue-700 sm:text-xs">
             Vue intelligente
           </p>
 
-          <h2 className="mt-2 text-3xl font-bold text-slate-950">
+          <h2 className="mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">
             Résumé instantané
           </h2>
 
-          <p className="mt-3 max-w-md text-sm leading-6 text-slate-700">
+          <p className="mt-3 text-sm leading-6 text-slate-700">
             Une vue claire et immédiate de ton activité.
           </p>
 
-          <div className="mt-5 space-y-3">
+          <div className="mt-4 grid gap-3">
             <div className="rounded-2xl border border-white/60 bg-white/60 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
               <p className="text-sm text-slate-500">Activité du jour</p>
-              <p className="mt-2 text-2xl font-bold text-emerald-600">
+              <p className="mt-2 text-xl font-bold text-emerald-600 sm:text-2xl">
                 {Number(kpis?.salesToday ?? 0).toLocaleString("fr-FR")} FCFA
               </p>
             </div>
 
             <div className="rounded-2xl border border-white/60 bg-white/60 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
               <p className="text-sm text-slate-500">Charges du jour</p>
-              <p className="mt-2 text-2xl font-bold text-rose-600">
+              <p className="mt-2 text-xl font-bold text-rose-600 sm:text-2xl">
                 {Number(kpis?.expensesToday ?? 0).toLocaleString("fr-FR")} FCFA
               </p>
             </div>
 
             <div className="rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
               <p className="text-sm text-slate-500">Lecture rapide</p>
-              <p className="mt-2 text-base leading-7 text-slate-700">
+              <p className="mt-2 text-sm leading-7 text-slate-700 sm:text-base">
                 {Number(kpis?.salesToday ?? 0).toLocaleString("fr-FR")} FCFA
                 d’activité pour{" "}
                 {Number(kpis?.expensesToday ?? 0).toLocaleString("fr-FR")} FCFA
@@ -103,13 +103,13 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-2">
-        <div className="rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+      <section className="grid gap-5 xl:grid-cols-2">
+        <div className="rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
           <div className="mb-4">
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs">
               Activités
             </p>
-            <h3 className="mt-1 text-2xl font-bold text-slate-950">
+            <h3 className="mt-1 text-xl font-bold text-slate-950 sm:text-2xl">
               Récentes
             </h3>
           </div>
@@ -123,10 +123,10 @@ export default function DashboardPage() {
               recentSalesPreview.map((item, index) => (
                 <div
                   key={item.id ?? index}
-                  className="flex items-center justify-between rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md"
+                  className="flex items-start justify-between gap-3 rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-slate-900">
+                  <div className="min-w-0 flex-1">
+                    <p className="break-words font-medium text-slate-900">
                       {item.product || item.label || item.activity || "-"}
                     </p>
 
@@ -135,7 +135,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
 
-                  <p className="ml-4 shrink-0 font-semibold text-emerald-600">
+                  <p className="shrink-0 text-right text-sm font-semibold text-emerald-600 sm:text-base">
                     {Number(item.amount ?? 0).toLocaleString("fr-FR")} FCFA
                   </p>
                 </div>
@@ -144,12 +144,12 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+        <div className="rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
           <div className="mb-4">
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs">
               Charges
             </p>
-            <h3 className="mt-1 text-2xl font-bold text-slate-950">
+            <h3 className="mt-1 text-xl font-bold text-slate-950 sm:text-2xl">
               Récentes
             </h3>
           </div>
@@ -163,10 +163,10 @@ export default function DashboardPage() {
               recentExpensesPreview.map((item, index) => (
                 <div
                   key={item.id ?? index}
-                  className="flex items-center justify-between rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md"
+                  className="flex items-start justify-between gap-3 rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-slate-900">
+                  <div className="min-w-0 flex-1">
+                    <p className="break-words font-medium text-slate-900">
                       {item.label || "-"}
                     </p>
 
@@ -175,7 +175,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
 
-                  <p className="ml-4 shrink-0 font-semibold text-rose-600">
+                  <p className="shrink-0 text-right text-sm font-semibold text-rose-600 sm:text-base">
                     {Number(item.amount ?? 0).toLocaleString("fr-FR")} FCFA
                   </p>
                 </div>

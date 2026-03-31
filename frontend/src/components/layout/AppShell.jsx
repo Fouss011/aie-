@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import ChatBox from "../ChatBox";
@@ -8,6 +9,13 @@ export default function AppShell({
   onNavigate,
   menuItems,
 }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  function handleNavigate(page) {
+    onNavigate(page);
+    setMobileMenuOpen(false);
+  }
+
   return (
     <div className="min-h-screen bg-[#E7EDF5] text-slate-900">
       <div className="relative min-h-screen overflow-hidden">
@@ -16,16 +24,21 @@ export default function AppShell({
         <div className="absolute top-[-70px] right-[-50px] h-[260px] w-[260px] rounded-full bg-blue-200/35 blur-3xl" />
         <div className="absolute bottom-[-110px] left-[-60px] h-[280px] w-[280px] rounded-full bg-slate-300/45 blur-3xl" />
 
-        <div className="relative mx-auto flex min-h-screen max-w-[1600px] gap-6 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="relative mx-auto flex min-h-screen max-w-[1600px] gap-4 px-3 py-3 sm:gap-6 sm:px-6 sm:py-4 lg:px-8">
           <Sidebar
             activePage={activePage}
-            onNavigate={onNavigate}
+            onNavigate={handleNavigate}
             menuItems={menuItems}
+            mobileOpen={mobileMenuOpen}
+            onClose={() => setMobileMenuOpen(false)}
           />
 
           <div className="min-w-0 flex-1">
-            <Topbar activePage={activePage} />
-            <main className="mt-4">{children}</main>
+            <Topbar
+              activePage={activePage}
+              onOpenMenu={() => setMobileMenuOpen(true)}
+            />
+            <main className="mt-4 sm:mt-5">{children}</main>
           </div>
         </div>
       </div>
