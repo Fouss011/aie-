@@ -27,7 +27,7 @@ export default function Sidebar({
 
       <aside
         className={`
-          fixed inset-y-0 left-0 z-50 w-[270px] max-w-[82vw] transform p-3 transition-transform duration-300 lg:static lg:z-auto lg:block lg:w-[235px] lg:max-w-none lg:translate-x-0 lg:p-0
+          fixed inset-y-0 left-0 z-50 w-[290px] max-w-[84vw] transform p-3 transition-transform duration-300 lg:static lg:z-auto lg:block lg:w-[260px] lg:max-w-none lg:translate-x-0 lg:p-0
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
@@ -77,7 +77,6 @@ export default function Sidebar({
                   }`}
                 >
                   <div className="text-sm font-semibold">{item.label}</div>
-
                   <div
                     className={`mt-1 text-xs ${
                       isActive ? "text-slate-300" : "text-slate-500"
@@ -94,7 +93,6 @@ export default function Sidebar({
             <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
               Statut
             </p>
-
             <p className="mt-2 text-lg font-semibold text-emerald-600">
               Opérationnel
             </p>

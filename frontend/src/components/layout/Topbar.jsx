@@ -44,10 +44,9 @@ export default function Topbar({ activePage, onOpenMenu }) {
   });
 
   return (
-    <div className="sticky top-3 z-40 w-full pr-1">
+    <div className="sticky top-0 z-30 w-full">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-5 bg-[#E7EDF5]/95 backdrop-blur-sm" />
-
-      <header className="relative rounded-[24px] border border-white/60 bg-[linear-gradient(180deg,rgba(248,250,252,0.98),rgba(237,243,250,0.96))] px-4 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:px-6 sm:py-5 lg:rounded-[28px] lg:px-7">
+      <header className="relative rounded-[24px] border border-white/60 bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(237,243,250,0.93))] px-4 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:px-6 sm:py-5 lg:rounded-[28px] lg:px-8">
         <div className="mb-4 flex items-center justify-between gap-3 lg:hidden">
           <button
             type="button"
