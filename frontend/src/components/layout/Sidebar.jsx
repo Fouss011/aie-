@@ -1,3 +1,5 @@
+import { useAuth } from "../../context/AuthProvider";
+
 const PAGE_META = {
   dashboard: "Vue d’ensemble",
   activities: "Suivi des opérations",
@@ -14,6 +16,17 @@ export default function Sidebar({
   mobileOpen = false,
   onClose,
 }) {
+  const { logout } = useAuth();
+
+  async function handleLogout() {
+    try {
+      await logout();
+      onClose?.();
+    } catch (error) {
+      console.error("Erreur déconnexion :", error);
+    }
+  }
+
   return (
     <>
       {mobileOpen && (
@@ -96,6 +109,16 @@ export default function Sidebar({
             <p className="mt-2 text-lg font-semibold text-emerald-600">
               Opérationnel
             </p>
+          </div>
+
+          <div className="mt-auto pt-6">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm font-semibold text-red-700 transition hover:bg-red-100"
+            >
+              Déconnexion
+            </button>
           </div>
         </div>
       </aside>
