@@ -48,7 +48,7 @@ export default function AppShell({
         </div>
       </div>
 
-      <ChatBox />
+      {!mobileMenuOpen ? <ChatBox /> : null}
     </div>
   );
 }
