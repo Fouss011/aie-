@@ -6,6 +6,7 @@ export async function createExpense(payload) {
     amount: Number(payload.amount),
     category: payload.category || null,
     expense_date: payload.expense_date,
+    structure_id: payload.structure_id,
   };
 
   const { data, error } = await supabase
@@ -21,10 +22,11 @@ export async function createExpense(payload) {
   return data;
 }
 
-export async function getRecentExpenses(limit = 100) {
+export async function getRecentExpenses(structureId, limit = 100) {
   const { data, error } = await supabase
     .from("expenses")
     .select("*")
+    .eq("structure_id", structureId)
     .order("expense_date", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -36,10 +38,11 @@ export async function getRecentExpenses(limit = 100) {
   return data || [];
 }
 
-export async function getExpensesForPrompt(limit = 200) {
+export async function getExpensesForPrompt(structureId, limit = 200) {
   const { data, error } = await supabase
     .from("expenses")
-    .select("id, label, amount, category, expense_date")
+    .select("id, label, amount, category, expense_date, structure_id")
+    .eq("structure_id", structureId)
     .order("expense_date", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -49,4 +52,20 @@ export async function getExpensesForPrompt(limit = 200) {
   }
 
   return data || [];
+}
+
+export async function deleteExpense(id, structureId) {
+  const { data, error } = await supabase
+    .from("expenses")
+    .delete()
+    .eq("id", id)
+    .eq("structure_id", structureId)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Erreur suppression dépense: ${error.message}`);
+  }
+
+  return data;
 }

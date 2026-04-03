@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { fetchExpenses } from "../api/expensesApi";
 import ExpenseForm from "../components/ExpenseForm";
 import ExpensesTable from "../components/ExpensesTable";
+import { useAuth } from "../context/AuthProvider";
 
 export default function ChargesPage() {
+  const { activeStructure } = useAuth();
+
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -13,7 +16,11 @@ export default function ChargesPage() {
       setLoading(true);
       setError("");
 
-      const expensesData = await fetchExpenses();
+      if (!activeStructure?.id) {
+        throw new Error("Aucune structure active sélectionnée.");
+      }
+
+      const expensesData = await fetchExpenses(activeStructure.id);
       setExpenses(Array.isArray(expensesData) ? expensesData : []);
     } catch (err) {
       setError(err?.message || "Impossible de charger les charges.");
@@ -23,8 +30,10 @@ export default function ChargesPage() {
   }
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (activeStructure?.id) {
+      loadData();
+    }
+  }, [activeStructure?.id]);
 
   return (
     <div className="space-y-6">
@@ -42,7 +51,7 @@ export default function ChargesPage() {
         </div>
       ) : (
         <div className="rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-          <ExpensesTable expenses={expenses} />
+          <ExpensesTable expenses={expenses} onDeleted={loadData} />
         </div>
       )}
     </div>

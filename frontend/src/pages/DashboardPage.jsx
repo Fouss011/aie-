@@ -3,6 +3,7 @@ import { fetchSales } from "../api/salesApi";
 import { fetchExpenses } from "../api/expensesApi";
 import { fetchDashboardKpis } from "../api/dashboardApi";
 import KpiGrid from "../components/KpiGrid";
+import MonthlyFinanceOverview from "../components/MonthlyFinanceOverview";
 import { useAuth } from "../context/AuthProvider";
 
 export default function DashboardPage() {
@@ -19,10 +20,16 @@ export default function DashboardPage() {
       setLoading(true);
       setError("");
 
+      const structureId = activeStructure?.id;
+
+      if (!structureId) {
+        throw new Error("Aucune structure active sélectionnée.");
+      }
+
       const [salesData, expensesData, kpisData] = await Promise.all([
-        fetchSales(),
-        fetchExpenses(),
-        fetchDashboardKpis(),
+        fetchSales(structureId),
+        fetchExpenses(structureId),
+        fetchDashboardKpis(structureId),
       ]);
 
       setSales(Array.isArray(salesData) ? salesData : []);
@@ -44,11 +51,10 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  const recentSalesPreview = sales.slice(0, 4);
-  const recentExpensesPreview = expenses.slice(0, 4);
+    if (activeStructure?.id) {
+      loadData();
+    }
+  }, [activeStructure?.id]);
 
   if (loading) {
     return (
@@ -121,98 +127,16 @@ export default function DashboardPage() {
               <p className="text-sm text-slate-500">Lecture rapide</p>
               <p className="mt-2 text-sm leading-7 text-slate-700 sm:text-base">
                 {Number(kpis?.salesToday ?? 0).toLocaleString("fr-FR")} FCFA
-                d’activité pour{" "}
+                {" "}d’activité pour{" "}
                 {Number(kpis?.expensesToday ?? 0).toLocaleString("fr-FR")} FCFA
-                de charges aujourd’hui.
+                {" "}de charges aujourd’hui.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-2">
-        <div className="rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
-          <div className="mb-4">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs">
-              Activités
-            </p>
-
-            <h3 className="mt-1 text-xl font-bold text-slate-950 sm:text-2xl">
-              Récentes
-            </h3>
-          </div>
-
-          <div className="space-y-3">
-            {recentSalesPreview.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300/80 bg-white/35 p-5 text-sm text-slate-500">
-                Aucune activité enregistrée.
-              </div>
-            ) : (
-              recentSalesPreview.map((item, index) => (
-                <div
-                  key={item.id ?? index}
-                  className="flex items-start justify-between gap-3 rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="break-words font-medium text-slate-900">
-                      {item.product || item.label || item.activity || "-"}
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      {item.date || "-"}
-                    </p>
-                  </div>
-
-                  <p className="shrink-0 text-right text-sm font-semibold text-emerald-600 sm:text-base">
-                    {Number(item.amount ?? 0).toLocaleString("fr-FR")} FCFA
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
-          <div className="mb-4">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs">
-              Charges
-            </p>
-
-            <h3 className="mt-1 text-xl font-bold text-slate-950 sm:text-2xl">
-              Récentes
-            </h3>
-          </div>
-
-          <div className="space-y-3">
-            {recentExpensesPreview.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300/80 bg-white/35 p-5 text-sm text-slate-500">
-                Aucune charge enregistrée.
-              </div>
-            ) : (
-              recentExpensesPreview.map((item, index) => (
-                <div
-                  key={item.id ?? index}
-                  className="flex items-start justify-between gap-3 rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="break-words font-medium text-slate-900">
-                      {item.label || "-"}
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      {item.date || "-"}
-                    </p>
-                  </div>
-
-                  <p className="shrink-0 text-right text-sm font-semibold text-rose-600 sm:text-base">
-                    {Number(item.amount ?? 0).toLocaleString("fr-FR")} FCFA
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
+      <MonthlyFinanceOverview sales={sales} expenses={expenses} />
 
       <section className="rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

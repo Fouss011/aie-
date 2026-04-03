@@ -4,9 +4,17 @@ import { computeBusinessMetrics } from "../services/metricsService.js";
 
 export async function getDashboardKpis(req, res, next) {
   try {
+    const structureId = req.query.structureId || req.query.structure_id;
+
+    if (!structureId) {
+      return res.status(400).json({
+        error: "structureId est obligatoire.",
+      });
+    }
+
     const [sales, expenses] = await Promise.all([
-      getSalesForPrompt(500),
-      getExpensesForPrompt(500),
+      getSalesForPrompt(structureId, 500),
+      getExpensesForPrompt(structureId, 500),
     ]);
 
     const metrics = computeBusinessMetrics(sales, expenses);

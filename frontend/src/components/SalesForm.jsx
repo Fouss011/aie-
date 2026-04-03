@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { createSale } from "../api/salesApi";
+import { useAuth } from "../context/AuthProvider";
 
 export default function SalesForm({ onCreated }) {
+  const { activeStructure } = useAuth();
+
   const [form, setForm] = useState({
     product: "",
     amount: "",
@@ -30,10 +33,13 @@ export default function SalesForm({ onCreated }) {
     setSuccess("");
 
     try {
-      await createSale({
-        ...form,
-        amount: Number(form.amount),
-      });
+      await createSale(
+        {
+          ...form,
+          amount: Number(form.amount),
+        },
+        activeStructure?.id
+      );
 
       setSuccess("Activité enregistrée avec succès.");
 
@@ -62,20 +68,19 @@ export default function SalesForm({ onCreated }) {
           Ajouter une activité
         </h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Enregistre une prestation, une intervention, une vente ou une action
-          réalisée.
+          Enregistre une vente, une prestation ou une activité génératrice de revenu.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
         <div className="md:col-span-2">
           <label className="mb-2 block text-sm font-medium text-slate-700">
-            Activité
+            Produit / Activité
           </label>
           <input
             name="product"
             type="text"
-            placeholder="Ex : prestation, intervention, vente, mission..."
+            placeholder="Ex : Vidange, publicité, maintenance..."
             value={form.product}
             onChange={handleChange}
             required
@@ -100,12 +105,12 @@ export default function SalesForm({ onCreated }) {
 
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">
-            Contact / Référence
+            Client
           </label>
           <input
             name="client"
             type="text"
-            placeholder="Ex : client, partenaire, bénéficiaire..."
+            placeholder="Ex : Kossi"
             value={form.client}
             onChange={handleChange}
             className="w-full rounded-2xl border border-slate-200/80 bg-white/70 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white"

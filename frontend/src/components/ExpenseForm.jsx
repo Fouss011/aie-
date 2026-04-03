@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { createExpense } from "../api/expensesApi";
+import { useAuth } from "../context/AuthProvider";
 
 export default function ExpenseForm({ onCreated }) {
+  const { activeStructure } = useAuth();
+
   const [form, setForm] = useState({
     label: "",
     amount: "",
@@ -30,10 +33,13 @@ export default function ExpenseForm({ onCreated }) {
     setSuccess("");
 
     try {
-      await createExpense({
-        ...form,
-        amount: Number(form.amount),
-      });
+      await createExpense(
+        {
+          ...form,
+          amount: Number(form.amount),
+        },
+        activeStructure?.id
+      );
 
       setSuccess("Charge enregistrée avec succès.");
 

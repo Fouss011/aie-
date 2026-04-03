@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { fetchSales } from "../api/salesApi";
 import SalesForm from "../components/SalesForm";
 import SalesTable from "../components/SalesTable";
+import { useAuth } from "../context/AuthProvider";
 
 export default function ActivitiesPage() {
+  const { activeStructure } = useAuth();
+
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -13,7 +16,11 @@ export default function ActivitiesPage() {
       setLoading(true);
       setError("");
 
-      const salesData = await fetchSales();
+      if (!activeStructure?.id) {
+        throw new Error("Aucune structure active sélectionnée.");
+      }
+
+      const salesData = await fetchSales(activeStructure.id);
       setSales(Array.isArray(salesData) ? salesData : []);
     } catch (err) {
       setError(err?.message || "Impossible de charger les activités.");
@@ -23,8 +30,10 @@ export default function ActivitiesPage() {
   }
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (activeStructure?.id) {
+      loadData();
+    }
+  }, [activeStructure?.id]);
 
   return (
     <div className="space-y-6">
@@ -42,7 +51,7 @@ export default function ActivitiesPage() {
         </div>
       ) : (
         <div className="rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-          <SalesTable sales={sales} />
+          <SalesTable sales={sales} onDeleted={loadData} />
         </div>
       )}
     </div>
