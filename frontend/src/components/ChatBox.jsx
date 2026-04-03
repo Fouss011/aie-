@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { askAssistant } from "../api/chatApi";
+import { useAuth } from "../context/AuthProvider";
 
 export default function ChatBox() {
+  const { activeStructure } = useAuth();
+
   const [isOpen, setIsOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState([
@@ -53,6 +56,19 @@ export default function ChatBox() {
 
     const currentQuestion = question.trim();
 
+    if (!activeStructure?.id) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: currentQuestion },
+        {
+          role: "assistant",
+          content: "Aucune structure active n’est sélectionnée pour analyser les données.",
+        },
+      ]);
+      setQuestion("");
+      return;
+    }
+
     setMessages((prev) => [
       ...prev,
       { role: "user", content: currentQuestion },
@@ -62,7 +78,7 @@ export default function ChatBox() {
     setLoading(true);
 
     try {
-      const response = await askAssistant(currentQuestion);
+      const response = await askAssistant(currentQuestion, activeStructure.id);
 
       setMessages((prev) => [
         ...prev,

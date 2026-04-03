@@ -1,12 +1,15 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
-export async function askAssistant(question) {
+export async function askAssistant(question, structureId) {
   const response = await fetch(`${API_URL}/api/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({
+      question,
+      structureId,
+    }),
   });
 
   let data = null;
@@ -18,7 +21,7 @@ export async function askAssistant(question) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.error || "Erreur assistant.");
+    throw new Error(data?.error || "Impossible de contacter l’assistant.");
   }
 
   return data;

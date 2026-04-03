@@ -2,7 +2,9 @@ import { askSalesAssistant } from "../services/chatService.js";
 
 export async function askChat(req, res, next) {
   try {
-    const { question } = req.body;
+    const { question, structureId, structure_id } = req.body;
+
+    const finalStructureId = structureId || structure_id;
 
     if (!question || !String(question).trim()) {
       return res.status(400).json({
@@ -10,7 +12,13 @@ export async function askChat(req, res, next) {
       });
     }
 
-    const result = await askSalesAssistant(question);
+    if (!finalStructureId) {
+      return res.status(400).json({
+        error: "structureId est obligatoire.",
+      });
+    }
+
+    const result = await askSalesAssistant(question, finalStructureId);
     res.json(result);
   } catch (error) {
     next(error);

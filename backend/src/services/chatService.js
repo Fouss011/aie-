@@ -106,14 +106,18 @@ async function askOpenAIWithContext(question, sales, expenses, metrics) {
   );
 }
 
-export async function askSalesAssistant(question) {
+export async function askSalesAssistant(question, structureId) {
   if (!question || !question.trim()) {
     throw new Error("La question est vide.");
   }
 
+  if (!structureId) {
+    throw new Error("structureId est obligatoire pour le chatbot.");
+  }
+
   const [sales, expenses] = await Promise.all([
-    getSalesForPrompt(200),
-    getExpensesForPrompt(200),
+    getSalesForPrompt(structureId, 200),
+    getExpensesForPrompt(structureId, 200),
   ]);
 
   const metrics = computeBusinessMetrics(sales, expenses);
