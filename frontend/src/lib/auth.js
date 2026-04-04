@@ -5,6 +5,7 @@ export async function signUpWithEmail({ fullName, email, password }) {
     email,
     password,
     options: {
+      emailRedirectTo: `${window.location.origin}`,
       data: {
         full_name: fullName || "",
       },
@@ -23,6 +24,26 @@ export async function signInWithEmail({ email, password }) {
 
   if (error) throw error;
   return data;
+}
+
+export async function resendConfirmationEmail(email) {
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: {
+      emailRedirectTo: `${window.location.origin}`,
+    },
+  });
+
+  if (error) throw error;
+}
+
+export async function sendPasswordReset(email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}`,
+  });
+
+  if (error) throw error;
 }
 
 export async function signOutUser() {

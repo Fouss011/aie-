@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { signInWithEmail, signUpWithEmail } from "../lib/auth";
+import {
+  resendConfirmationEmail,
+  sendPasswordReset,
+  signInWithEmail,
+  signUpWithEmail,
+} from "../lib/auth";
 
 export default function AuthScreen() {
   const [mode, setMode] = useState("login");
@@ -18,8 +23,17 @@ export default function AuthScreen() {
 
     try {
       if (mode === "signup") {
-        await signUpWithEmail({ fullName, email, password });
-        setMessage("Compte créé. Vérifie ton email si une confirmation est demandée.");
+        const result = await signUpWithEmail({ fullName, email, password });
+
+        if (result?.user?.id) {
+          setMessage(
+            "Si cet email est nouveau, un lien de confirmation a été envoyé. Si tu as déjà un compte, connecte-toi ou renvoie l’email de confirmation."
+          );
+        } else {
+          setMessage(
+            "Demande d’inscription envoyée. Si cet email est nouveau, vérifie ta boîte mail."
+          );
+        }
       } else {
         await signInWithEmail({ email, password });
       }
@@ -28,6 +42,60 @@ export default function AuthScreen() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleResendConfirmation() {
+    try {
+      setMessage("");
+      setErrorText("");
+
+      if (!email.trim()) {
+        setErrorText("Entre ton email pour renvoyer le lien de confirmation.");
+        return;
+      }
+
+      setLoading(true);
+      await resendConfirmationEmail(email);
+
+      setMessage(
+        "Si ce compte existe et n’est pas encore confirmé, un nouvel email a été envoyé."
+      );
+    } catch (error) {
+      setErrorText(error.message || "Impossible de renvoyer l’email.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleForgotPassword() {
+    try {
+      setMessage("");
+      setErrorText("");
+
+      if (!email.trim()) {
+        setErrorText("Entre ton email pour recevoir un lien de réinitialisation.");
+        return;
+      }
+
+      setLoading(true);
+      await sendPasswordReset(email);
+
+      setMessage(
+        "Si ce compte existe, un email de réinitialisation a été envoyé."
+      );
+    } catch (error) {
+      setErrorText(
+        error.message || "Impossible d’envoyer l’email de réinitialisation."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function switchMode(nextMode) {
+    setMode(nextMode);
+    setMessage("");
+    setErrorText("");
   }
 
   return (
@@ -104,21 +172,43 @@ export default function AuthScreen() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl bg-[#0B1F3A] px-4 py-3 text-sm font-semibold text-white"
+            className="w-full rounded-2xl bg-[#0B1F3A] px-4 py-3 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {loading ? "Patiente..." : mode === "login" ? "Se connecter" : "Créer mon compte"}
+            {loading
+              ? "Patiente..."
+              : mode === "login"
+              ? "Se connecter"
+              : "Créer mon compte"}
           </button>
+
+          <div className="pt-1 text-center text-sm">
+            {mode === "login" ? (
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={loading}
+                className="font-medium text-blue-700 hover:underline disabled:opacity-60"
+              >
+                Mot de passe oublié ?
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleResendConfirmation}
+                disabled={loading}
+                className="font-medium text-blue-700 hover:underline disabled:opacity-60"
+              >
+                Renvoyer l’email de confirmation
+              </button>
+            )}
+          </div>
         </form>
 
         <div className="mt-5 text-center text-sm text-slate-600">
           {mode === "login" ? "Pas encore de compte ?" : "Tu as déjà un compte ?"}{" "}
           <button
             type="button"
-            onClick={() => {
-              setMode(mode === "login" ? "signup" : "login");
-              setMessage("");
-              setErrorText("");
-            }}
+            onClick={() => switchMode(mode === "login" ? "signup" : "login")}
             className="font-semibold text-blue-700 hover:underline"
           >
             {mode === "login" ? "Créer un compte" : "Se connecter"}
