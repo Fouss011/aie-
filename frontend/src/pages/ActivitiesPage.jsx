@@ -8,6 +8,7 @@ export default function ActivitiesPage() {
   const { activeStructure } = useAuth();
 
   const [sales, setSales] = useState([]);
+  const [editingSale, setEditingSale] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -23,10 +24,24 @@ export default function ActivitiesPage() {
       const salesData = await fetchSales(activeStructure.id);
       setSales(Array.isArray(salesData) ? salesData : []);
     } catch (err) {
-      setError(err?.message || "Impossible de charger les activités.");
+      setError(err?.message || "Impossible de charger les recettes.");
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleEdit(item) {
+    setEditingSale(item);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleCancelEdit() {
+    setEditingSale(null);
+  }
+
+  async function handleSaved() {
+    setEditingSale(null);
+    await loadData();
   }
 
   useEffect(() => {
@@ -38,7 +53,11 @@ export default function ActivitiesPage() {
   return (
     <div className="space-y-6">
       <div className="rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-        <SalesForm onCreated={loadData} />
+        <SalesForm
+          onCreated={handleSaved}
+          editingSale={editingSale}
+          onCancelEdit={handleCancelEdit}
+        />
       </div>
 
       {loading ? (
@@ -51,7 +70,11 @@ export default function ActivitiesPage() {
         </div>
       ) : (
         <div className="rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-          <SalesTable sales={sales} onDeleted={loadData} />
+          <SalesTable
+            sales={sales}
+            onDeleted={loadData}
+            onEdit={handleEdit}
+          />
         </div>
       )}
     </div>

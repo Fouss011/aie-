@@ -22,6 +22,29 @@ export async function createSale(payload) {
   return data;
 }
 
+export async function updateSale(id, payload) {
+  const updates = {
+    product: payload.product,
+    amount: Number(payload.amount),
+    client_name: payload.client_name || null,
+    sale_date: payload.sale_date,
+  };
+
+  const { data, error } = await supabase
+    .from("sales")
+    .update(updates)
+    .eq("id", id)
+    .eq("structure_id", payload.structure_id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Erreur modification vente: ${error.message}`);
+  }
+
+  return data;
+}
+
 export async function getRecentSales(structureId, limit = 100) {
   const { data, error } = await supabase
     .from("sales")

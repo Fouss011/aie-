@@ -2,6 +2,7 @@ import {
   createSale,
   deleteSale,
   getRecentSales,
+  updateSale,
 } from "../services/salesService.js";
 
 function mapSaleForFrontend(sale) {
@@ -46,6 +47,53 @@ export async function postSale(req, res, next) {
   }
 }
 
+export async function putSale(req, res, next) {
+  try {
+    const { id } = req.params;
+    const {
+      product,
+      amount,
+      client,
+      client_name,
+      sale_date,
+      structure_id,
+      structureId,
+    } = req.body;
+
+    const finalStructureId = structure_id || structureId;
+
+    if (!id) {
+      return res.status(400).json({
+        error: "id est obligatoire.",
+      });
+    }
+
+    if (!product || amount === undefined || !sale_date || !finalStructureId) {
+      return res.status(400).json({
+        error: "product, amount, sale_date et structure_id sont obligatoires.",
+      });
+    }
+
+    const updated = await updateSale(id, {
+      product,
+      amount,
+      client_name: client_name || client || null,
+      sale_date,
+      structure_id: finalStructureId,
+    });
+
+    if (!updated) {
+      return res.status(404).json({
+        error: "Recette introuvable ou non autorisée pour cette structure.",
+      });
+    }
+
+    res.json(mapSaleForFrontend(updated));
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function listSales(req, res, next) {
   try {
     const structureId = req.query.structureId || req.query.structure_id;
@@ -80,7 +128,7 @@ export async function deleteSaleItem(req, res, next) {
 
     if (!deleted) {
       return res.status(404).json({
-        error: "Activité introuvable ou non autorisée pour cette structure.",
+        error: "Recette introuvable ou non autorisée pour cette structure.",
       });
     }
 

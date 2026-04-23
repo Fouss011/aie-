@@ -65,13 +65,51 @@ export async function createExpense(payload, structureId) {
   return data;
 }
 
-export async function deleteExpense(id, structureId) {
+export async function updateExpense(id, payload, structureId) {
   if (!id) {
-    throw new Error("Identifiant de la charge introuvable.");
+    throw new Error("Identifiant de la dépense introuvable.");
   }
 
   if (!structureId) {
-    throw new Error("Structure active introuvable pour supprimer la charge.");
+    throw new Error("Structure active introuvable pour modifier la dépense.");
+  }
+
+  const response = await fetch(
+    buildUrl(`/api/expenses/${id}`, { structureId }),
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...payload,
+        structure_id: structureId,
+      }),
+    }
+  );
+
+  let data = null;
+
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Impossible de modifier la dépense.");
+  }
+
+  return data;
+}
+
+export async function deleteExpense(id, structureId) {
+  if (!id) {
+    throw new Error("Identifiant de la dépense introuvable.");
+  }
+
+  if (!structureId) {
+    throw new Error("Structure active introuvable pour supprimer la dépense.");
   }
 
   const response = await fetch(
@@ -90,7 +128,7 @@ export async function deleteExpense(id, structureId) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.error || "Impossible de supprimer la charge.");
+    throw new Error(data?.error || "Impossible de supprimer la dépense.");
   }
 
   return data;

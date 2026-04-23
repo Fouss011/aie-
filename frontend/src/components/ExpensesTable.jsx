@@ -7,7 +7,7 @@ import {
   formatDisplayDate,
 } from "../utils/finance";
 
-export default function ExpensesTable({ expenses = [], onDeleted }) {
+export default function ExpensesTable({ expenses = [], onDeleted, onEdit }) {
   const { activeStructure } = useAuth();
   const [deletingId, setDeletingId] = useState(null);
   const [actionError, setActionError] = useState("");
@@ -24,7 +24,7 @@ export default function ExpensesTable({ expenses = [], onDeleted }) {
   const [openMonthKey, setOpenMonthKey] = useState(grouped[0]?.key ?? null);
 
   async function handleDelete(item) {
-    const label = item.label || "cette charge";
+    const label = item.label || "cette dépense";
     const confirmed = window.confirm(
       `Voulez-vous vraiment supprimer "${label}" ?`
     );
@@ -37,7 +37,7 @@ export default function ExpensesTable({ expenses = [], onDeleted }) {
       await deleteExpense(item.id, activeStructure?.id);
       onDeleted?.();
     } catch (err) {
-      setActionError(err?.message || "Impossible de supprimer la charge.");
+      setActionError(err?.message || "Impossible de supprimer la dépense.");
     } finally {
       setDeletingId(null);
     }
@@ -47,11 +47,11 @@ export default function ExpensesTable({ expenses = [], onDeleted }) {
     <section className="rounded-[28px] border border-white/45 bg-[linear-gradient(180deg,rgba(248,250,252,0.90),rgba(241,245,249,0.84))] p-6 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl">
       <div className="mb-6">
         <h2 className="text-3xl font-bold text-slate-950">
-          Charges enregistrées
+          Dépenses enregistrées
         </h2>
 
         <p className="mt-2 text-sm text-slate-500">
-          Charges rangées par mois avec détail à l’ouverture
+          Dépenses rangées par mois avec détail à l’ouverture
         </p>
       </div>
 
@@ -63,7 +63,7 @@ export default function ExpensesTable({ expenses = [], onDeleted }) {
 
       {grouped.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300/80 bg-white/35 p-8 text-center text-slate-500">
-          Aucune charge enregistrée.
+          Aucune dépense enregistrée.
         </div>
       ) : (
         <div className="space-y-4">
@@ -85,7 +85,7 @@ export default function ExpensesTable({ expenses = [], onDeleted }) {
                       {month.label}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
-                      {month.items.length} charge(s)
+                      {month.items.length} dépense(s)
                     </p>
                   </div>
 
@@ -98,7 +98,7 @@ export default function ExpensesTable({ expenses = [], onDeleted }) {
                 </button>
 
                 {isOpen ? (
-                  <div className="border-t border-slate-200/60 overflow-x-auto">
+                  <div className="overflow-x-auto border-t border-slate-200/60">
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="border-b border-slate-200/70 bg-white/40 text-left">
@@ -115,7 +115,7 @@ export default function ExpensesTable({ expenses = [], onDeleted }) {
                             Catégorie
                           </th>
                           <th className="px-5 py-4 text-sm font-semibold text-slate-500">
-                            Action
+                            Actions
                           </th>
                         </tr>
                       </thead>
@@ -146,14 +146,24 @@ export default function ExpensesTable({ expenses = [], onDeleted }) {
                               </td>
 
                               <td className="px-5 py-4 text-sm">
-                                <button
-                                  type="button"
-                                  onClick={() => handleDelete(expense)}
-                                  disabled={isDeleting}
-                                  className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
-                                >
-                                  {isDeleting ? "Suppression..." : "Supprimer"}
-                                </button>
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => onEdit?.(expense)}
+                                    className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-blue-700 transition hover:bg-blue-100"
+                                  >
+                                    Modifier
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDelete(expense)}
+                                    disabled={isDeleting}
+                                    className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    {isDeleting ? "Suppression..." : "Supprimer"}
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           );

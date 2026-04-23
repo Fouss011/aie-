@@ -14,7 +14,7 @@ function buildUrl(path, params = {}) {
 
 export async function fetchSales(structureId) {
   if (!structureId) {
-    throw new Error("Structure active introuvable pour charger les activités.");
+    throw new Error("Structure active introuvable pour charger les recettes.");
   }
 
   const response = await fetch(buildUrl("/api/sales", { structureId }));
@@ -28,7 +28,7 @@ export async function fetchSales(structureId) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.error || "Impossible de charger les ventes.");
+    throw new Error(data?.error || "Impossible de charger les recettes.");
   }
 
   return data;
@@ -36,7 +36,7 @@ export async function fetchSales(structureId) {
 
 export async function createSale(payload, structureId) {
   if (!structureId) {
-    throw new Error("Structure active introuvable pour ajouter une activité.");
+    throw new Error("Structure active introuvable pour ajouter une recette.");
   }
 
   const response = await fetch(`${API_URL}/api/sales`, {
@@ -59,27 +59,31 @@ export async function createSale(payload, structureId) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.error || "Impossible d'ajouter la vente.");
+    throw new Error(data?.error || "Impossible d'ajouter la recette.");
   }
 
   return data;
 }
 
-export async function deleteSale(id, structureId) {
+export async function updateSale(id, payload, structureId) {
   if (!id) {
-    throw new Error("Identifiant de l’activité introuvable.");
+    throw new Error("Identifiant de la recette introuvable.");
   }
 
   if (!structureId) {
-    throw new Error("Structure active introuvable pour supprimer l’activité.");
+    throw new Error("Structure active introuvable pour modifier la recette.");
   }
 
-  const response = await fetch(
-    buildUrl(`/api/sales/${id}`, { structureId }),
-    {
-      method: "DELETE",
-    }
-  );
+  const response = await fetch(buildUrl(`/api/sales/${id}`, { structureId }), {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      ...payload,
+      structure_id: structureId,
+    }),
+  });
 
   let data = null;
 
@@ -90,7 +94,35 @@ export async function deleteSale(id, structureId) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.error || "Impossible de supprimer l’activité.");
+    throw new Error(data?.error || "Impossible de modifier la recette.");
+  }
+
+  return data;
+}
+
+export async function deleteSale(id, structureId) {
+  if (!id) {
+    throw new Error("Identifiant de la recette introuvable.");
+  }
+
+  if (!structureId) {
+    throw new Error("Structure active introuvable pour supprimer la recette.");
+  }
+
+  const response = await fetch(buildUrl(`/api/sales/${id}`, { structureId }), {
+    method: "DELETE",
+  });
+
+  let data = null;
+
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Impossible de supprimer la recette.");
   }
 
   return data;

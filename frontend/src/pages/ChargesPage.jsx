@@ -8,6 +8,7 @@ export default function ChargesPage() {
   const { activeStructure } = useAuth();
 
   const [expenses, setExpenses] = useState([]);
+  const [editingExpense, setEditingExpense] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -23,10 +24,24 @@ export default function ChargesPage() {
       const expensesData = await fetchExpenses(activeStructure.id);
       setExpenses(Array.isArray(expensesData) ? expensesData : []);
     } catch (err) {
-      setError(err?.message || "Impossible de charger les charges.");
+      setError(err?.message || "Impossible de charger les dépenses.");
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleEdit(item) {
+    setEditingExpense(item);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleCancelEdit() {
+    setEditingExpense(null);
+  }
+
+  async function handleSaved() {
+    setEditingExpense(null);
+    await loadData();
   }
 
   useEffect(() => {
@@ -38,7 +53,11 @@ export default function ChargesPage() {
   return (
     <div className="space-y-6">
       <div className="rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-        <ExpenseForm onCreated={loadData} />
+        <ExpenseForm
+          onCreated={handleSaved}
+          editingExpense={editingExpense}
+          onCancelEdit={handleCancelEdit}
+        />
       </div>
 
       {loading ? (
@@ -51,7 +70,11 @@ export default function ChargesPage() {
         </div>
       ) : (
         <div className="rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-          <ExpensesTable expenses={expenses} onDeleted={loadData} />
+          <ExpensesTable
+            expenses={expenses}
+            onDeleted={loadData}
+            onEdit={handleEdit}
+          />
         </div>
       )}
     </div>

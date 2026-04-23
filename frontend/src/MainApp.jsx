@@ -17,8 +17,8 @@ export default function MainApp() {
   const MENU_ITEMS = useMemo(
     () => [
       { key: "dashboard", label: structureLabel },
-      { key: "activities", label: "Activités" },
-      { key: "charges", label: "Charges" },
+      { key: "activities", label: "Recettes" },
+      { key: "charges", label: "Dépenses" },
       { key: "imports", label: "Imports" },
       { key: "documents", label: "Justificatifs" },
       { key: "notes", label: "Notes" },

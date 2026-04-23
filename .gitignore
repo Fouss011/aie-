@@ -12,3 +12,5 @@ coverage
 .env.*
 frontend/.env
 backend/.env
+frontend/android/
+node_modules/

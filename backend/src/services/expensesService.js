@@ -22,6 +22,29 @@ export async function createExpense(payload) {
   return data;
 }
 
+export async function updateExpense(id, payload) {
+  const updates = {
+    label: payload.label,
+    amount: Number(payload.amount),
+    category: payload.category || null,
+    expense_date: payload.expense_date,
+  };
+
+  const { data, error } = await supabase
+    .from("expenses")
+    .update(updates)
+    .eq("id", id)
+    .eq("structure_id", payload.structure_id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Erreur modification dépense: ${error.message}`);
+  }
+
+  return data;
+}
+
 export async function getRecentExpenses(structureId, limit = 100) {
   const { data, error } = await supabase
     .from("expenses")

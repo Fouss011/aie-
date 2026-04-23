@@ -2,6 +2,7 @@ import {
   createExpense,
   deleteExpense,
   getRecentExpenses,
+  updateExpense,
 } from "../services/expensesService.js";
 
 function mapExpenseForFrontend(expense) {
@@ -44,6 +45,52 @@ export async function postExpense(req, res, next) {
   }
 }
 
+export async function putExpense(req, res, next) {
+  try {
+    const { id } = req.params;
+    const {
+      label,
+      amount,
+      category,
+      expense_date,
+      structure_id,
+      structureId,
+    } = req.body;
+
+    const finalStructureId = structure_id || structureId;
+
+    if (!id) {
+      return res.status(400).json({
+        error: "id est obligatoire.",
+      });
+    }
+
+    if (!label || amount === undefined || !expense_date || !finalStructureId) {
+      return res.status(400).json({
+        error: "label, amount, expense_date et structure_id sont obligatoires.",
+      });
+    }
+
+    const updated = await updateExpense(id, {
+      label,
+      amount,
+      category,
+      expense_date,
+      structure_id: finalStructureId,
+    });
+
+    if (!updated) {
+      return res.status(404).json({
+        error: "Dépense introuvable ou non autorisée pour cette structure.",
+      });
+    }
+
+    res.json(mapExpenseForFrontend(updated));
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function listExpenses(req, res, next) {
   try {
     const structureId = req.query.structureId || req.query.structure_id;
@@ -78,7 +125,7 @@ export async function deleteExpenseItem(req, res, next) {
 
     if (!deleted) {
       return res.status(404).json({
-        error: "Charge introuvable ou non autorisée pour cette structure.",
+        error: "Dépense introuvable ou non autorisée pour cette structure.",
       });
     }
 
