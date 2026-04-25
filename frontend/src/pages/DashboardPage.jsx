@@ -7,6 +7,8 @@ import MonthlyFinanceOverview from "../components/MonthlyFinanceOverview";
 import { useAuth } from "../context/AuthProvider";
 import InsightCard from "../components/InsightCard";
 import { generateInsight } from "../utils/insightEngine";
+import PremiumLockCard from "../components/PremiumLockCard";
+import { getTrialStatus } from "../utils/access";
 
 function getTodayString() {
   return new Date().toISOString().slice(0, 10);
@@ -29,6 +31,8 @@ export default function DashboardPage() {
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const trialStatus = getTrialStatus(activeStructure);
+  const canUsePremium = trialStatus.isTrialActive;
 
   const insight = useMemo(() => {
     const today = getTodayString();
@@ -161,14 +165,14 @@ export default function DashboardPage() {
 
           <div className="mt-4 grid gap-3">
             <div className="rounded-2xl border border-white/60 bg-white/60 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
-              <p className="text-sm text-slate-500">Activité du jour</p>
+              <p className="text-sm text-slate-500">Recettes du jour</p>
               <p className="mt-2 text-xl font-bold text-emerald-600 sm:text-2xl">
                 {Number(kpis?.salesToday ?? 0).toLocaleString("fr-FR")} FCFA
               </p>
             </div>
 
             <div className="rounded-2xl border border-white/60 bg-white/60 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
-              <p className="text-sm text-slate-500">Charges du jour</p>
+              <p className="text-sm text-slate-500">Dépenses du jour</p>
               <p className="mt-2 text-xl font-bold text-rose-600 sm:text-2xl">
                 {Number(kpis?.expensesToday ?? 0).toLocaleString("fr-FR")} FCFA
               </p>
@@ -178,13 +182,20 @@ export default function DashboardPage() {
               <p className="text-sm text-slate-500">Lecture rapide</p>
               <p className="mt-2 text-sm leading-7 text-slate-700 sm:text-base">
                 {Number(kpis?.salesToday ?? 0).toLocaleString("fr-FR")} FCFA
-                {" "}d’activité pour{" "}
+                {" "}de recettes pour{" "}
                 {Number(kpis?.expensesToday ?? 0).toLocaleString("fr-FR")} FCFA
-                {" "}de charges aujourd’hui.
+                {" "}de dépenses aujourd’hui.
               </p>
             </div>
 
-            <InsightCard insight={insight} />
+            {canUsePremium ? (
+              <InsightCard insight={insight} />
+            ) : (
+              <PremiumLockCard
+                title="Analyse intelligente réservée"
+                message="Tu peux continuer à enregistrer tes recettes et dépenses. Pour accéder aux analyses intelligentes, active ton abonnement Moniva."
+              />
+            )}
           </div>
         </div>
       </section>
