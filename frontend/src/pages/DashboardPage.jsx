@@ -1,10 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchSales } from "../api/salesApi";
 import { fetchExpenses } from "../api/expensesApi";
 import { fetchDashboardKpis } from "../api/dashboardApi";
 import KpiGrid from "../components/KpiGrid";
 import MonthlyFinanceOverview from "../components/MonthlyFinanceOverview";
 import { useAuth } from "../context/AuthProvider";
+import InsightCard from "../components/InsightCard";
+import { generateInsight } from "../utils/insightEngine";
+
+function getTodayString() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getCurrentMonthPrefix() {
+  return getTodayString().slice(0, 7);
+}
+
+function normalizeDate(value) {
+  if (!value) return "";
+  return new Date(value).toISOString().slice(0, 10);
+}
 
 export default function DashboardPage() {
   const { activeStructure, logout } = useAuth();
@@ -14,6 +29,42 @@ export default function DashboardPage() {
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const insight = useMemo(() => {
+    const today = getTodayString();
+    const currentMonth = getCurrentMonthPrefix();
+
+    const salesToday = sales.reduce((total, item) => {
+      const itemDate = normalizeDate(item.sale_date || item.date);
+      return itemDate === today ? total + Number(item.amount || 0) : total;
+    }, 0);
+
+    const expensesToday = expenses.reduce((total, item) => {
+      const itemDate = normalizeDate(item.expense_date || item.date);
+      return itemDate === today ? total + Number(item.amount || 0) : total;
+    }, 0);
+
+    const monthSales = sales.reduce((total, item) => {
+      const itemDate = normalizeDate(item.sale_date || item.date);
+      return itemDate.startsWith(currentMonth)
+        ? total + Number(item.amount || 0)
+        : total;
+    }, 0);
+
+    const monthExpenses = expenses.reduce((total, item) => {
+      const itemDate = normalizeDate(item.expense_date || item.date);
+      return itemDate.startsWith(currentMonth)
+        ? total + Number(item.amount || 0)
+        : total;
+    }, 0);
+
+    return generateInsight({
+      salesToday,
+      expensesToday,
+      monthSales,
+      monthExpenses,
+    });
+  }, [sales, expenses]);
 
   async function loadData() {
     try {
@@ -132,6 +183,8 @@ export default function DashboardPage() {
                 {" "}de charges aujourd’hui.
               </p>
             </div>
+
+            <InsightCard insight={insight} />
           </div>
         </div>
       </section>
