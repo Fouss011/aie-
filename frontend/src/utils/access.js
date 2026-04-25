@@ -1,4 +1,4 @@
-const TRIAL_DAYS = 0;
+const TRIAL_DAYS = 30;
 
 export function getTrialStatus(activeStructure) {
   if (!activeStructure?.created_at) {
