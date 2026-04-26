@@ -23,8 +23,8 @@ export default function SubscriptionBanner({ access }) {
       setMessage("");
 
       const data = await requestSubscriptionPayment(structureId);
-      indow.location.href = data.paymentUrl;
-      
+      window.location.href = data.paymentUrl;
+
     } catch (error) {
       setMessage(
         error?.message || "Impossible d’envoyer la demande pour le moment."
