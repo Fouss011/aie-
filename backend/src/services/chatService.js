@@ -62,6 +62,18 @@ function isClosingMessage(question) {
     "merci bro",
     "ok c'est bon",
     "c'est bon",
+    "D'accord",
+    "Daccord",
+    "ok",
+    "super",
+    "merci je vais faire ça",
+    "on fait ça",
+    "merci, on fait ça",
+    "compris",
+    "ok compris",
+    "D'accord, compris",
+    "good",
+    "top",
   ];
 
   return closings.includes(q);
@@ -237,7 +249,7 @@ export async function askSalesAssistant(payload, maybeStructureId) {
   if (!structureId) {
     throw new Error("structureId est obligatoire pour le chatbot.");
   }
-  
+
   if (isClosingMessage(question)) {
   return {
     answer: "Avec plaisir. Continue surtout à suivre tes ventes et dépenses régulièrement, c’est comme ça que tu vas garder une vision claire.",
