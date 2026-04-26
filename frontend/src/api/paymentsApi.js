@@ -1,5 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
+console.log("🔥 API_URL =", API_URL); // 👈 AJOUTE ÇA ICI
+
 export async function requestSubscriptionPayment(structureId) {
   const response = await fetch(`${API_URL}/api/payments/request`, {
     method: "POST",
