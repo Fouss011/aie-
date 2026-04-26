@@ -22,11 +22,9 @@ export default function SubscriptionBanner({ access }) {
       setLoading(true);
       setMessage("");
 
-      await requestSubscriptionPayment(structureId);
-
-      setMessage(
-        "Demande envoyée. Ton abonnement sera activé après validation du paiement."
-      );
+      const data = await requestSubscriptionPayment(structureId);
+      indow.location.href = data.paymentUrl;
+      
     } catch (error) {
       setMessage(
         error?.message || "Impossible d’envoyer la demande pour le moment."

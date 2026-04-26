@@ -9,16 +9,14 @@ export async function requestSubscriptionPayment(structureId) {
     body: JSON.stringify({ structureId }),
   });
 
-  let data = null;
-
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
-  }
+  const data = await response.json().catch(() => null);
 
   if (!response.ok) {
     throw new Error(data?.error || "Impossible de créer la demande d’abonnement.");
+  }
+
+  if (!data?.paymentUrl) {
+    throw new Error("Lien de paiement indisponible.");
   }
 
   return data;
