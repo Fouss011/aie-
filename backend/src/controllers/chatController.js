@@ -2,7 +2,7 @@ import { askSalesAssistant } from "../services/chatService.js";
 
 export async function askChat(req, res, next) {
   try {
-    const { question, structureId, structure_id } = req.body;
+    const { question, structureId, structure_id, history } = req.body;
 
     const finalStructureId = structureId || structure_id;
 
@@ -18,7 +18,12 @@ export async function askChat(req, res, next) {
       });
     }
 
-    const result = await askSalesAssistant(question, finalStructureId);
+    const result = await askSalesAssistant({
+      question: String(question).trim(),
+      structureId: finalStructureId,
+      history: Array.isArray(history) ? history : [],
+    });
+
     res.json(result);
   } catch (error) {
     next(error);

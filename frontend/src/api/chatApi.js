@@ -1,6 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
-export async function askAssistant(question, structureId) {
+export async function askAssistant(question, structureId, history = []) {
   const response = await fetch(`${API_URL}/api/chat`, {
     method: "POST",
     headers: {
@@ -9,6 +9,7 @@ export async function askAssistant(question, structureId) {
     body: JSON.stringify({
       question,
       structureId,
+      history,
     }),
   });
 

@@ -14,6 +14,46 @@ function formatAmount(value) {
   return new Intl.NumberFormat("fr-FR").format(Number(value || 0));
 }
 
+function isShortReaction(question) {
+  const q = String(question || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[!?.,;:]/g, "");
+
+  const reactions = [
+    "ok",
+    "oui",
+    "d'accord",
+    "dac",
+    "good",
+    "super",
+    "cool",
+    "interessant",
+    "intéressant",
+    "interessant donc",
+    "intéressant donc",
+    "donc",
+    "ah ok",
+    "je vois",
+    "bien",
+    "très bien",
+    "tres bien",
+    "parfait",
+  ];
+
+  return reactions.includes(q) || q.length <= 18;
+}
+
+function normalizeHistory(history = []) {
+  return history
+    .filter((item) => item && item.role && item.content)
+    .slice(-6)
+    .map((item) => ({
+      role: item.role === "assistant" ? "assistant" : "user",
+      content: String(item.content).slice(0, 1200),
+    }));
+}
+
 function buildDeterministicAnswer(intent, metrics) {
   switch (intent) {
     case "sales_today":
@@ -81,39 +121,66 @@ function buildDeterministicAnswer(intent, metrics) {
   }
 }
 
-async function askOpenAIWithContext(question, sales, expenses, metrics) {
+function buildConversationInstruction(question, history) {
+  if (isShortReaction(question) && history.length > 0) {
+    return `
+L'utilisateur vient de faire une réaction courte : "${question}".
+Ne répète pas tout le bilan.
+Continue naturellement la conversation à partir du dernier échange.
+Donne le vrai enseignement principal en 2 à 4 phrases maximum.
+    `.trim();
+  }
+
+  return `
+Réponds directement à la question de l'utilisateur : "${question}".
+Si la question demande une analyse, donne une réponse utile, concrète et priorisée.
+Si la question demande seulement un chiffre précis, sois bref.
+  `.trim();
+}
+
+async function askOpenAIWithContext(question, sales, expenses, metrics, history = []) {
+  const safeHistory = normalizeHistory(history);
   const prompt = buildBusinessPrompt(question, sales, expenses, metrics);
+  const conversationInstruction = buildConversationInstruction(question, safeHistory);
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
-    temperature: 0.1,
+    temperature: 0.2,
     messages: [
       {
         role: "system",
         content: `
-Tu es Moniva Copilot, un assistant business intelligent qui analyse les recettes et les dépenses.
+Tu es Moniva Copilot, un assistant business intelligent pour petites structures.
 
 Ton rôle :
-- analyser les recettes, dépenses et résultats d'une petite structure
-- répondre uniquement à partir des données fournies
-- aider l'utilisateur à comprendre sa situation réelle
-- rester simple, concret et prudent
+- analyser les recettes, dépenses, activités et résultats
+- aider l'utilisateur à décider quoi améliorer
+- échanger naturellement, comme un conseiller lucide
+- rester concret, prudent et utile
 
 Règles strictes :
 - N'invente jamais de chiffre.
+- Utilise uniquement les données fournies dans le contexte.
+- Ne répète pas les mêmes chiffres si l'utilisateur réagit simplement avec "ok", "intéressant", "donc", "je vois", etc.
+- Si l'utilisateur fait une réaction courte, continue la conversation avec une synthèse ou une recommandation claire.
+- Si les données sont insuffisantes, dis-le.
 - Ne fais pas de promesse de gain.
-- Ne fais pas de projection irréaliste.
-- Si aucune dépense n'est enregistrée sur la période, signale que le bénéfice peut être surestimé.
-- Si les données sont insuffisantes, dis-le clairement.
 - Ne donne pas de conseil financier risqué.
 - Réponds en français simple.
 - Réponse courte : 3 à 6 phrases maximum.
-- Structure la réponse en : constat, point d'attention, conseil court.
+- Pour une question stratégique, structure la réponse ainsi : constat, risque, action prioritaire.
         `.trim(),
       },
+      ...safeHistory,
       {
         role: "user",
-        content: prompt,
+        content: `
+${conversationInstruction}
+
+Voici le contexte chiffré et les données disponibles :
+
+${prompt}
+        `.trim(),
       },
     ],
   });
@@ -124,8 +191,23 @@ Règles strictes :
   );
 }
 
-export async function askSalesAssistant(question, structureId) {
-  if (!question || !question.trim()) {
+export async function askSalesAssistant(payload, maybeStructureId) {
+  const question =
+    typeof payload === "object" && payload !== null
+      ? payload.question
+      : payload;
+
+  const structureId =
+    typeof payload === "object" && payload !== null
+      ? payload.structureId
+      : maybeStructureId;
+
+  const history =
+    typeof payload === "object" && payload !== null && Array.isArray(payload.history)
+      ? payload.history
+      : [];
+
+  if (!question || !String(question).trim()) {
     throw new Error("La question est vide.");
   }
 
@@ -143,7 +225,7 @@ export async function askSalesAssistant(question, structureId) {
 
   const deterministicAnswer = buildDeterministicAnswer(intent, metrics);
 
-  if (deterministicAnswer) {
+  if (deterministicAnswer && !isShortReaction(question)) {
     return {
       answer: deterministicAnswer,
       source: "backend_metrics",
@@ -154,7 +236,13 @@ export async function askSalesAssistant(question, structureId) {
     };
   }
 
-  const aiAnswer = await askOpenAIWithContext(question, sales, expenses, metrics);
+  const aiAnswer = await askOpenAIWithContext(
+    question,
+    sales,
+    expenses,
+    metrics,
+    history
+  );
 
   return {
     answer: aiAnswer,
