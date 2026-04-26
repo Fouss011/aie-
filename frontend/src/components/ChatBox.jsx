@@ -69,12 +69,11 @@ export default function ChatBox() {
         ...prev,
         {
           role: "assistant",
-          content:
-            result?.answer ||
-            "Je n’ai pas pu générer de réponse pour le moment.",
+          content: result?.answer,
         },
       ]);
     } catch (error) {
+      if (!result?.answer) return;
       setMessages((prev) => [
         ...prev,
         {
