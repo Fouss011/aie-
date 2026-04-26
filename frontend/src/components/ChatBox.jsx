@@ -54,11 +54,7 @@ export default function ChatBox() {
       return;
     }
 
-    const userMessage = {
-      role: "user",
-      content: question,
-    };
-
+    const userMessage = { role: "user", content: question };
     const nextMessages = [...messages, userMessage];
 
     setMessages(nextMessages);
@@ -106,8 +102,12 @@ export default function ChatBox() {
   return (
     <>
       {isOpen && (
-        <div className="fixed bottom-24 right-4 z-50 w-[calc(100vw-2rem)] max-w-[420px] overflow-hidden rounded-[28px] border border-white/50 bg-white/95 shadow-[0_24px_70px_rgba(15,23,42,0.22)] backdrop-blur-xl">
-          <div className="border-b border-slate-100 bg-[linear-gradient(135deg,#020617,#0f172a)] p-4 text-white">
+        <div className="fixed bottom-6 right-4 z-50 flex h-[560px] w-[calc(100vw-2rem)] max-w-[420px] flex-col overflow-hidden rounded-[28px] border border-white/50 bg-white/95 shadow-[0_24px_70px_rgba(15,23,42,0.22)] backdrop-blur-xl sm:bottom-6 sm:right-6">
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="border-b border-slate-100 bg-[linear-gradient(135deg,#020617,#0f172a)] p-4 text-left text-white"
+          >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.24em] text-blue-200">
@@ -119,21 +119,17 @@ export default function ChatBox() {
                 </h2>
 
                 <p className="mt-1 text-xs leading-5 text-slate-300">
-                  Analyse tes recettes, dépenses et tendances.
+                  Clique ici pour réduire le copilot.
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="rounded-full bg-white/10 px-3 py-1 text-sm font-bold text-white hover:bg-white/20"
-              >
-                ×
-              </button>
+              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">
+                Réduire
+              </span>
             </div>
-          </div>
+          </button>
 
-          <div className="max-h-[420px] space-y-3 overflow-y-auto bg-slate-50/80 p-3">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50/80 p-3">
             {messages.map((message, index) => {
               const isUser = message.role === "user";
 
@@ -166,7 +162,7 @@ export default function ChatBox() {
             <div ref={bottomRef} />
           </div>
 
-          <div className="border-t border-slate-100 bg-white p-3">
+          <div className="shrink-0 border-t border-slate-100 bg-white p-3">
             <form onSubmit={handleSend} className="flex gap-2">
               <input
                 value={input}
@@ -195,14 +191,16 @@ export default function ChatBox() {
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => setIsOpen((value) => !value)}
-        className="fixed bottom-5 right-4 z-50 inline-flex items-center gap-3 rounded-full bg-slate-950 px-5 py-4 text-sm font-semibold text-white shadow-[0_20px_50px_rgba(15,23,42,0.35)] hover:bg-slate-900"
-      >
-        <span className="h-3 w-3 rounded-full bg-sky-400" />
-        {isOpen ? "Fermer Moniva Copilot" : "Ouvrir Moniva Copilot"}
-      </button>
+      {!isOpen && (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-5 right-4 z-50 inline-flex items-center gap-3 rounded-full bg-slate-950 px-5 py-4 text-sm font-semibold text-white shadow-[0_20px_50px_rgba(15,23,42,0.35)] hover:bg-slate-900"
+        >
+          <span className="h-3 w-3 rounded-full bg-sky-400" />
+          Ouvrir Moniva Copilot
+        </button>
+      )}
     </>
   );
 }
