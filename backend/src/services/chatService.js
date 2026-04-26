@@ -206,7 +206,7 @@ async function askOpenAIWithContext(
       {
         role: "system",
         content: `
-Tu es Moniva Copilot, un assistant business intelligent pour petites structures.
+Tu es Monyva Copilot, un assistant business intelligent pour petites structures.
 
 Ton rôle :
 - analyser les recettes, dépenses, activités et résultats

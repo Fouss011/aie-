@@ -103,7 +103,7 @@ export default function AuthScreen() {
       <div className="mx-auto max-w-md rounded-[30px] border border-white/60 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-8">
         <div className="mb-6">
           <div className="inline-flex rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-800">
-            Moniva
+            Monyva
           </div>
 
           <h1 className="mt-4 text-3xl font-bold text-slate-950">

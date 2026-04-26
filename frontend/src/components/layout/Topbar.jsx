@@ -15,7 +15,7 @@ function getPageTitle(activePage, activeStructure) {
     case "notes":
       return "Notes terrain";
     default:
-      return "Moniva";
+      return "Monyva";
   }
 }
 
@@ -68,14 +68,14 @@ export default function Topbar({ activePage, onOpenMenu }) {
             </button>
 
             <div className="inline-flex shrink-0 rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-[11px] font-semibold text-blue-800">
-              Moniva
+              Monyva
             </div>
           </div>
 
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 max-w-3xl">
               <div className="hidden lg:inline-flex items-center gap-2 rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-800">
-                Moniva • Plateforme intelligente multi-secteurs
+                Monyva • Plateforme intelligente multi-secteurs
               </div>
 
               <h1 className="mt-1 break-words text-3xl font-bold leading-tight tracking-tight text-slate-950 sm:text-4xl lg:mt-4 lg:text-5xl">

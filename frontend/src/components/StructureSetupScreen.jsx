@@ -66,7 +66,7 @@ export default function StructureSetupScreen() {
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <div className="inline-flex rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-800">
-              Moniva
+              Monyva
             </div>
 
             <h1 className="mt-4 text-3xl font-bold text-slate-950">

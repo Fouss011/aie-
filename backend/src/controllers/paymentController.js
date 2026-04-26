@@ -12,7 +12,7 @@ export async function requestPayment(req, res, next) {
       return res.status(400).json({ error: "structureId est obligatoire." });
     }
 
-    const transactionId = `MONIVA-${Date.now()}-${crypto
+    const transactionId = `MONYVA-${Date.now()}-${crypto
       .randomBytes(4)
       .toString("hex")}`;
 
@@ -33,7 +33,7 @@ export async function requestPayment(req, res, next) {
     const cinetpayResponse = await initializeCinetPayPayment({
       transactionId,
       amount: SUBSCRIPTION_AMOUNT,
-      description: "Abonnement Moniva",
+      description: "Abonnement Monyva",
       customerName: customerName || "Client",
       customerEmail,
       customerPhone,

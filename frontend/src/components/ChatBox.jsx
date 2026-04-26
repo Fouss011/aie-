@@ -79,7 +79,7 @@ export default function ChatBox() {
       {
         role: "assistant",
         content:
-          "🚫 Ton essai est terminé.\n\nActive ton abonnement Moniva pour continuer à utiliser le Copilot.",
+          "🚫 Ton essai est terminé.\n\nActive ton abonnement Monyva pour continuer à utiliser le Copilot.",
       },
     ]);
     return;
@@ -91,7 +91,7 @@ export default function ChatBox() {
       role: "assistant",
       content:
         error?.message ||
-        "Impossible de contacter Moniva Copilot pour le moment.",
+        "Impossible de contacter Monyva Copilot pour le moment.",
     },
   ]);
 
@@ -122,7 +122,7 @@ export default function ChatBox() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.24em] text-blue-200">
-                  Moniva Copilot
+                  Monyva Copilot
                 </p>
 
                 <h2 className="mt-1 text-lg font-bold">
@@ -209,7 +209,7 @@ export default function ChatBox() {
           className="fixed bottom-5 right-4 z-50 inline-flex items-center gap-3 rounded-full bg-slate-950 px-5 py-4 text-sm font-semibold text-white shadow-[0_20px_50px_rgba(15,23,42,0.35)] hover:bg-slate-900"
         >
           <span className="h-3 w-3 rounded-full bg-sky-400" />
-          Ouvrir Moniva Copilot
+          Ouvrir Monyva Copilot
         </button>
       )}
     </>

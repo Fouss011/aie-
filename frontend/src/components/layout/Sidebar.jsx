@@ -47,7 +47,7 @@ export default function Sidebar({
         <div className="flex h-[calc(100dvh-24px)] flex-col overflow-hidden rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.95),rgba(237,243,250,0.90))] shadow-[0_20px_60px_rgba(15,23,42,0.12)] backdrop-blur-xl lg:sticky lg:top-4 lg:h-auto">
           <div className="flex items-center justify-between px-5 pb-0 pt-5 lg:hidden">
             <div className="inline-flex rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-800">
-              Moniva
+              Monyva
             </div>
 
             <button
@@ -62,7 +62,7 @@ export default function Sidebar({
           <div className="flex-1 overflow-y-auto px-5 pb-5 pt-5">
             <div className="mb-6">
               <div className="hidden lg:inline-flex rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-800">
-                Moniva
+                Monyva
               </div>
 
               <h2 className="mt-3 text-2xl font-bold text-slate-950">

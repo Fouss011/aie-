@@ -50,7 +50,7 @@ export default function SubscriptionBanner({ access }) {
                 🚫 Ton essai est terminé.
               </p>
               <p className="mt-1">
-                Active ton abonnement pour continuer à utiliser Moniva Copilot.
+                Active ton abonnement pour continuer à utiliser Monyva Copilot.
               </p>
             </>
           ) : (
