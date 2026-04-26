@@ -10,7 +10,10 @@ export default function SubscriptionBanner({ access }) {
 
   const structureId = activeStructure?.id;
   const remainingDays = Number(access?.remainingDays || 0);
+
+  // 🔥 IMPORTANT
   const isExpired = remainingDays <= 0;
+  const isSubscribed = access?.isActive === true && isExpired;
 
   async function handleRequestPayment() {
     if (!structureId || loading) return;
@@ -59,7 +62,7 @@ export default function SubscriptionBanner({ access }) {
               </p>
               {remainingDays <= 5 && (
                 <p className="mt-1">
-                  Ton essai se termine bientôt. Pense à activer ton abonnement.
+                  ⚠️ Ton essai se termine bientôt. Pense à activer ton abonnement.
                 </p>
               )}
             </>
@@ -72,14 +75,25 @@ export default function SubscriptionBanner({ access }) {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={handleRequestPayment}
-          disabled={loading}
-          className="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading ? "Envoi..." : "Activer mon abonnement"}
-        </button>
+        {/* 🔥 BOUTON INTELLIGENT */}
+        {isSubscribed ? (
+          <button
+            type="button"
+            disabled
+            className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm"
+          >
+            Abonné
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleRequestPayment}
+            disabled={loading}
+            className="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? "Envoi..." : "Activer mon abonnement"}
+          </button>
+        )}
       </div>
     </div>
   );
