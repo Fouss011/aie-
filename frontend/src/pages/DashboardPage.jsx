@@ -23,6 +23,70 @@ function normalizeDate(value) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
+// ✅ NOUVEAU : calcul local des KPI
+function buildLocalKpis(sales = [], expenses = []) {
+  const today = getTodayString();
+  const currentMonth = getCurrentMonthPrefix();
+
+  let salesToday = 0;
+  let expensesToday = 0;
+  let salesMonth = 0;
+  let expensesMonth = 0;
+
+  const productCount = new Map();
+
+  sales.forEach((item) => {
+    const amount = Number(item.amount || 0);
+    const itemDate = normalizeDate(item.sale_date || item.date);
+
+    if (itemDate === today) {
+      salesToday += amount;
+    }
+
+    if (itemDate.startsWith(currentMonth)) {
+      salesMonth += amount;
+    }
+
+    const product = item.product || "Aucune donnée";
+    productCount.set(product, (productCount.get(product) || 0) + 1);
+  });
+
+  expenses.forEach((item) => {
+    const amount = Number(item.amount || 0);
+    const itemDate = normalizeDate(item.expense_date || item.date);
+
+    if (itemDate === today) {
+      expensesToday += amount;
+    }
+
+    if (itemDate.startsWith(currentMonth)) {
+      expensesMonth += amount;
+    }
+  });
+
+  let topProduct = "Aucune donnée";
+  let bestCount = 0;
+
+  productCount.forEach((count, product) => {
+    if (count > bestCount) {
+      bestCount = count;
+      topProduct = product;
+    }
+  });
+
+  return {
+    salesToday,
+    expensesToday,
+    profitToday: salesToday - expensesToday,
+    salesMonth,
+    expensesMonth,
+    profitMonth: salesMonth - expensesMonth,
+    salesCount: sales.length,
+    expensesCount: expenses.length,
+    topProduct,
+  };
+}
+
 export default function DashboardPage() {
   const { activeStructure, logout } = useAuth();
 
@@ -31,6 +95,7 @@ export default function DashboardPage() {
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const trialStatus = getTrialStatus(activeStructure);
   const canUsePremium = trialStatus.isTrialActive;
 
@@ -87,9 +152,21 @@ export default function DashboardPage() {
         fetchDashboardKpis(structureId),
       ]);
 
-      setSales(Array.isArray(salesData) ? salesData : []);
-      setExpenses(Array.isArray(expensesData) ? expensesData : []);
-      setKpis(kpisData ?? {});
+      const safeSales = Array.isArray(salesData) ? salesData : [];
+      const safeExpenses = Array.isArray(expensesData) ? expensesData : [];
+
+      setSales(safeSales);
+      setExpenses(safeExpenses);
+
+      // ✅ calcul local
+      const localKpis = buildLocalKpis(safeSales, safeExpenses);
+
+      setKpis({
+        ...localKpis,
+        ...(kpisData || {}),
+        salesToday: localKpis.salesToday,
+        expensesToday: localKpis.expensesToday,
+      });
     } catch (err) {
       setError(err?.message || "Une erreur est survenue lors du chargement.");
     } finally {
@@ -112,161 +189,34 @@ export default function DashboardPage() {
   }, [activeStructure?.id]);
 
   if (loading) {
-    return (
-      <div className="rounded-[24px] border border-white/45 bg-[linear-gradient(180deg,rgba(248,250,252,0.90),rgba(241,245,249,0.84))] p-8 text-center text-slate-600 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[28px] sm:p-10">
-        Chargement...
-      </div>
-    );
+    return <div>Chargement...</div>;
   }
 
   if (error) {
-    return (
-      <div className="rounded-[24px] border border-red-200/80 bg-[linear-gradient(180deg,rgba(254,242,242,0.95),rgba(255,255,255,0.88))] p-5 text-red-700 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[28px]">
-        {error}
-      </div>
-    );
+    return <div className="text-red-600">{error}</div>;
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
-      <section className="grid gap-5 xl:grid-cols-[1.35fr_0.85fr]">
-        <div className="min-w-0 rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
-          <div className="mb-4">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs">
-              Vue d’ensemble
-            </p>
+    <div className="space-y-5">
+      <KpiGrid kpis={kpis} />
 
-            <h2 className="mt-1 text-2xl font-bold text-slate-950 sm:text-3xl">
-              Dashboard principal
-            </h2>
+      <div>
+        <p>Recettes du jour : {kpis?.salesToday} FCFA</p>
+        <p>Dépenses du jour : {kpis?.expensesToday} FCFA</p>
+      </div>
 
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Les indicateurs clés de ton activité en un coup d’œil.
-            </p>
-          </div>
-
-          <div className="overflow-hidden rounded-[22px]">
-            <KpiGrid kpis={kpis} />
-          </div>
-        </div>
-
-        <div className="rounded-[24px] border border-blue-100/70 bg-[linear-gradient(180deg,rgba(239,246,255,0.92),rgba(248,250,252,0.88))] p-4 shadow-[0_16px_40px_rgba(37,99,235,0.08)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-blue-700 sm:text-xs">
-            Vue intelligente
-          </p>
-
-          <h2 className="mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">
-            Résumé instantané
-          </h2>
-
-          <p className="mt-3 text-sm leading-6 text-slate-700">
-            Une vue claire et immédiate de ton activité.
-          </p>
-
-          <div className="mt-4 grid gap-3">
-            <div className="rounded-2xl border border-white/60 bg-white/60 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
-              <p className="text-sm text-slate-500">Recettes du jour</p>
-              <p className="mt-2 text-xl font-bold text-emerald-600 sm:text-2xl">
-                {Number(kpis?.salesToday ?? 0).toLocaleString("fr-FR")} FCFA
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-white/60 bg-white/60 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
-              <p className="text-sm text-slate-500">Dépenses du jour</p>
-              <p className="mt-2 text-xl font-bold text-rose-600 sm:text-2xl">
-                {Number(kpis?.expensesToday ?? 0).toLocaleString("fr-FR")} FCFA
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
-              <p className="text-sm text-slate-500">Lecture rapide</p>
-              <p className="mt-2 text-sm leading-7 text-slate-700 sm:text-base">
-                {Number(kpis?.salesToday ?? 0).toLocaleString("fr-FR")} FCFA
-                {" "}de recettes pour{" "}
-                {Number(kpis?.expensesToday ?? 0).toLocaleString("fr-FR")} FCFA
-                {" "}de dépenses aujourd’hui.
-              </p>
-            </div>
-
-            {canUsePremium ? (
-              <InsightCard insight={insight} />
-            ) : (
-              <PremiumLockCard
-                title="Analyse intelligente réservée"
-                message="Tu peux continuer à enregistrer tes recettes et dépenses. Pour accéder aux analyses intelligentes, active ton abonnement Moniva."
-              />
-            )}
-          </div>
-        </div>
-      </section>
+      {canUsePremium ? (
+        <InsightCard insight={insight} />
+      ) : (
+        <PremiumLockCard
+          title="Analyse intelligente réservée"
+          message="Active ton abonnement pour débloquer."
+        />
+      )}
 
       <MonthlyFinanceOverview sales={sales} expenses={expenses} />
 
-      <section className="rounded-[24px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.88),rgba(241,245,249,0.82))] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:rounded-[30px] sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs">
-              Structure active
-            </p>
-
-            <h2 className="mt-1 break-words text-2xl font-bold text-slate-950 sm:text-3xl">
-              {activeStructure?.name || "Ma structure"}
-            </h2>
-
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Espace principal de la structure connectée.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm font-medium text-slate-700 shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
-          >
-            Déconnexion
-          </button>
-        </div>
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
-            <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">
-              Nom
-            </p>
-            <p className="mt-2 text-sm font-semibold text-slate-900">
-              {activeStructure?.name || "—"}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
-            <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">
-              Secteur
-            </p>
-            <p className="mt-2 text-sm font-semibold text-slate-900">
-              {activeStructure?.sector || "Non renseigné"}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
-            <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">
-              Localisation
-            </p>
-            <p className="mt-2 text-sm font-semibold text-slate-900">
-              {[activeStructure?.city, activeStructure?.country]
-                .filter(Boolean)
-                .join(", ") || "Non renseignée"}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
-            <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">
-              Identifiant
-            </p>
-            <p className="mt-2 break-all text-sm font-semibold text-slate-900">
-              {activeStructure?.slug || "—"}
-            </p>
-          </div>
-        </div>
-      </section>
+      <button onClick={handleLogout}>Déconnexion</button>
     </div>
   );
 }
