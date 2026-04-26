@@ -11,6 +11,12 @@ import documentsRoutes from "./routes/documentsRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
 import { env } from "./config/env.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
+
+app.use("/api/payments", paymentRoutes);
+import accessRoutes from "./routes/accessRoutes.js";
+
+app.use("/api/access", accessRoutes);
 
 const app = express();
 

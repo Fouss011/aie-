@@ -8,7 +8,10 @@ import { useAuth } from "../context/AuthProvider";
 import InsightCard from "../components/InsightCard";
 import { generateInsight } from "../utils/insightEngine";
 import PremiumLockCard from "../components/PremiumLockCard";
+import ChatBox from "../components/ChatBox";
 import { getTrialStatus } from "../utils/access";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 function getTodayString() {
   return new Date().toISOString().slice(0, 10);
@@ -23,7 +26,6 @@ function normalizeDate(value) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
-// ✅ NOUVEAU : calcul local des KPI
 function buildLocalKpis(sales = [], expenses = []) {
   const today = getTodayString();
   const currentMonth = getCurrentMonthPrefix();
@@ -39,13 +41,8 @@ function buildLocalKpis(sales = [], expenses = []) {
     const amount = Number(item.amount || 0);
     const itemDate = normalizeDate(item.sale_date || item.date);
 
-    if (itemDate === today) {
-      salesToday += amount;
-    }
-
-    if (itemDate.startsWith(currentMonth)) {
-      salesMonth += amount;
-    }
+    if (itemDate === today) salesToday += amount;
+    if (itemDate.startsWith(currentMonth)) salesMonth += amount;
 
     const product = item.product || "Aucune donnée";
     productCount.set(product, (productCount.get(product) || 0) + 1);
@@ -55,13 +52,8 @@ function buildLocalKpis(sales = [], expenses = []) {
     const amount = Number(item.amount || 0);
     const itemDate = normalizeDate(item.expense_date || item.date);
 
-    if (itemDate === today) {
-      expensesToday += amount;
-    }
-
-    if (itemDate.startsWith(currentMonth)) {
-      expensesMonth += amount;
-    }
+    if (itemDate === today) expensesToday += amount;
+    if (itemDate.startsWith(currentMonth)) expensesMonth += amount;
   });
 
   let topProduct = "Aucune donnée";
@@ -93,11 +85,12 @@ export default function DashboardPage() {
   const [sales, setSales] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [kpis, setKpis] = useState(null);
+  const [access, setAccess] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const trialStatus = getTrialStatus(activeStructure);
-  const canUsePremium = trialStatus.isTrialActive;
+  const canUsePremium = access?.isActive ?? trialStatus.isTrialActive;
 
   const insight = useMemo(() => {
     const today = getTodayString();
@@ -135,6 +128,21 @@ export default function DashboardPage() {
     });
   }, [sales, expenses]);
 
+  async function loadAccessStatus(structureId) {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/access/status?structureId=${structureId}`
+      );
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+      setAccess(data);
+    } catch (err) {
+      console.warn("Statut accès indisponible :", err);
+    }
+  }
+
   async function loadData() {
     try {
       setLoading(true);
@@ -152,13 +160,14 @@ export default function DashboardPage() {
         fetchDashboardKpis(structureId),
       ]);
 
+      await loadAccessStatus(structureId);
+
       const safeSales = Array.isArray(salesData) ? salesData : [];
       const safeExpenses = Array.isArray(expensesData) ? expensesData : [];
 
       setSales(safeSales);
       setExpenses(safeExpenses);
 
-      // ✅ calcul local
       const localKpis = buildLocalKpis(safeSales, safeExpenses);
 
       setKpis({
@@ -188,16 +197,34 @@ export default function DashboardPage() {
     }
   }, [activeStructure?.id]);
 
-  if (loading) {
-    return <div>Chargement...</div>;
-  }
+  if (loading) return <div>Chargement...</div>;
 
-  if (error) {
-    return <div className="text-red-600">{error}</div>;
-  }
+  if (error) return <div className="text-red-600">{error}</div>;
 
   return (
     <div className="space-y-5">
+      {access && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          {access.remainingDays > 0 ? (
+            <>
+              ⏳ Il te reste{" "}
+              <strong>{access.remainingDays} jour(s)</strong> d’essai.
+              {access.remainingDays <= 5 && (
+                <div className="mt-1 text-xs text-amber-700">
+                  ⚠️ Ton essai se termine bientôt. Pense à activer ton
+                  abonnement.
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              🚫 Ton essai est terminé. Active ton abonnement pour continuer à
+              utiliser Moniva.
+            </>
+          )}
+        </div>
+      )}
+
       <KpiGrid kpis={kpis} />
 
       <div>
@@ -217,6 +244,8 @@ export default function DashboardPage() {
       <MonthlyFinanceOverview sales={sales} expenses={expenses} />
 
       <button onClick={handleLogout}>Déconnexion</button>
+
+      <ChatBox />
     </div>
   );
 }

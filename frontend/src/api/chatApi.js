@@ -21,6 +21,10 @@ export async function askAssistant(question, structureId, history = []) {
     data = null;
   }
 
+  if (response.status === 403) {
+    throw new Error("SUBSCRIPTION_REQUIRED");
+  }
+
   if (!response.ok) {
     throw new Error(data?.error || "Impossible de contacter l’assistant.");
   }

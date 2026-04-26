@@ -73,16 +73,28 @@ export default function ChatBox() {
         },
       ]);
     } catch (error) {
-      if (!result?.answer) return;
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content:
-            error?.message ||
-            "Impossible de contacter Moniva Copilot pour le moment.",
-        },
-      ]);
+  if (error.message === "SUBSCRIPTION_REQUIRED") {
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content:
+          "🚫 Ton essai est terminé.\n\nActive ton abonnement Moniva pour continuer à utiliser le Copilot.",
+      },
+    ]);
+    return;
+  }
+
+  setMessages((prev) => [
+    ...prev,
+    {
+      role: "assistant",
+      content:
+        error?.message ||
+        "Impossible de contacter Moniva Copilot pour le moment.",
+    },
+  ]);
+
     } finally {
       setLoading(false);
     }
