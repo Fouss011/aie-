@@ -10,6 +10,7 @@ import { generateInsight } from "../utils/insightEngine";
 import PremiumLockCard from "../components/PremiumLockCard";
 import ChatBox from "../components/ChatBox";
 import { getTrialStatus } from "../utils/access";
+import SubscriptionBanner from "../components/SubscriptionBanner";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -197,33 +198,13 @@ export default function DashboardPage() {
     }
   }, [activeStructure?.id]);
 
-  if (loading) return <div>Chargement...</div>;
+    if (loading) return <div>Chargement...</div>;
 
   if (error) return <div className="text-red-600">{error}</div>;
 
   return (
     <div className="space-y-5">
-      {access && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          {access.remainingDays > 0 ? (
-            <>
-              ⏳ Il te reste{" "}
-              <strong>{access.remainingDays} jour(s)</strong> d’essai.
-              {access.remainingDays <= 5 && (
-                <div className="mt-1 text-xs text-amber-700">
-                  ⚠️ Ton essai se termine bientôt. Pense à activer ton
-                  abonnement.
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              🚫 Ton essai est terminé. Active ton abonnement pour continuer à
-              utiliser Moniva.
-            </>
-          )}
-        </div>
-      )}
+      {access && <SubscriptionBanner access={access} />}
 
       <KpiGrid kpis={kpis} />
 
