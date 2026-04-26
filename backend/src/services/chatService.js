@@ -44,6 +44,29 @@ function isShortReaction(question) {
   return reactions.includes(q) || q.length <= 18;
 }
 
+function isClosingMessage(question) {
+  const q = String(question || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[!?.,;:]/g, "");
+
+  const closings = [
+    "merci",
+    "ok merci",
+    "d'accord merci",
+    "dac merci",
+    "c'est bon merci",
+    "parfait merci",
+    "super merci",
+    "merci beaucoup",
+    "merci bro",
+    "ok c'est bon",
+    "c'est bon",
+  ];
+
+  return closings.includes(q);
+}
+
 function normalizeHistory(history = []) {
   return history
     .filter((item) => item && item.role && item.content)
@@ -214,6 +237,17 @@ export async function askSalesAssistant(payload, maybeStructureId) {
   if (!structureId) {
     throw new Error("structureId est obligatoire pour le chatbot.");
   }
+  
+  if (isClosingMessage(question)) {
+  return {
+    answer: "Avec plaisir. Continue surtout à suivre tes ventes et dépenses régulièrement, c’est comme ça que tu vas garder une vision claire.",
+    source: "conversation_closing",
+    intent: "closing",
+    salesCount: 0,
+    expensesCount: 0,
+    metrics: null,
+  };
+}
 
   const [sales, expenses] = await Promise.all([
     getSalesForPrompt(structureId, 200),
