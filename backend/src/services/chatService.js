@@ -14,41 +14,16 @@ function formatAmount(value) {
   return new Intl.NumberFormat("fr-FR").format(Number(value || 0));
 }
 
-function isShortReaction(question) {
-  const q = String(question || "")
+function normalizeText(value) {
+  return String(value || "")
     .toLowerCase()
     .trim()
-    .replace(/[!?.,;:]/g, "");
-
-  const reactions = [
-    "ok",
-    "oui",
-    "d'accord",
-    "dac",
-    "good",
-    "super",
-    "cool",
-    "interessant",
-    "intéressant",
-    "interessant donc",
-    "intéressant donc",
-    "donc",
-    "ah ok",
-    "je vois",
-    "bien",
-    "très bien",
-    "tres bien",
-    "parfait",
-  ];
-
-  return reactions.includes(q) || q.length <= 18;
+    .replace(/[!?.,;:]/g, "")
+    .replace(/\s+/g, " ");
 }
 
-function isClosingMessage(question) {
-  const q = String(question || "")
-    .toLowerCase()
-    .trim()
-    .replace(/[!?.,;:]/g, "");
+function classifyUserMessage(question) {
+  const q = normalizeText(question);
 
   const closings = [
     "merci",
@@ -60,23 +35,55 @@ function isClosingMessage(question) {
     "super merci",
     "merci beaucoup",
     "merci bro",
-    "ok c'est bon",
-    "c'est bon",
-    "D'accord",
-    "Daccord",
-    "ok",
-    "super",
     "merci je vais faire ça",
-    "on fait ça",
-    "merci, on fait ça",
-    "compris",
-    "ok compris",
-    "D'accord, compris",
-    "good",
-    "top",
+    "merci je vais faire ca",
   ];
 
-  return closings.includes(q);
+  const neutral = [
+    "ok",
+    "oui",
+    "d'accord",
+    "daccord",
+    "dac",
+    "compris",
+    "ok compris",
+    "good",
+    "top",
+    "super",
+    "parfait",
+    "bien",
+    "très bien",
+    "tres bien",
+    "je vois",
+    "ah ok",
+    "on fait ça",
+    "on fait ca",
+  ];
+
+  const followup = [
+    "donc",
+    "du coup",
+    "alors",
+    "interessant",
+    "intéressant",
+    "interessant donc",
+    "intéressant donc",
+    "et donc",
+    "ok donc",
+  ];
+
+  if (closings.includes(q)) return "closing";
+  if (followup.includes(q)) return "followup";
+  if (neutral.includes(q)) return "neutral";
+
+  if (q.length <= 14) return "neutral";
+
+  return "question";
+}
+
+function isShortReaction(question) {
+  const type = classifyUserMessage(question);
+  return type === "neutral" || type === "followup";
 }
 
 function normalizeHistory(history = []) {
@@ -156,27 +163,41 @@ function buildDeterministicAnswer(intent, metrics) {
   }
 }
 
-function buildConversationInstruction(question, history) {
-  if (isShortReaction(question) && history.length > 0) {
+function buildConversationInstruction(question, history, messageType) {
+  if (messageType === "followup" && history.length > 0) {
     return `
-L'utilisateur vient de faire une réaction courte : "${question}".
-Ne répète pas tout le bilan.
-Continue naturellement la conversation à partir du dernier échange.
-Donne le vrai enseignement principal en 2 à 4 phrases maximum.
+L'utilisateur réagit ou demande une suite : "${question}".
+Ne recommence pas le bilan.
+Ne répète pas les chiffres déjà donnés.
+Donne uniquement l'idée la plus importante en 2 à 3 phrases.
     `.trim();
   }
 
   return `
 Réponds directement à la question de l'utilisateur : "${question}".
-Si la question demande une analyse, donne une réponse utile, concrète et priorisée.
-Si la question demande seulement un chiffre précis, sois bref.
+Si c’est une analyse, donne :
+1. un constat clair
+2. un seul point prioritaire
+3. une action simple
+Si c’est une question exploratoire, conseille prudemment sans inventer de chiffres.
   `.trim();
 }
 
-async function askOpenAIWithContext(question, sales, expenses, metrics, history = []) {
+async function askOpenAIWithContext(
+  question,
+  sales,
+  expenses,
+  metrics,
+  history = [],
+  messageType = "question"
+) {
   const safeHistory = normalizeHistory(history);
   const prompt = buildBusinessPrompt(question, sales, expenses, metrics);
-  const conversationInstruction = buildConversationInstruction(question, safeHistory);
+  const conversationInstruction = buildConversationInstruction(
+    question,
+    safeHistory,
+    messageType
+  );
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
@@ -197,13 +218,14 @@ Règles strictes :
 - N'invente jamais de chiffre.
 - Utilise uniquement les données fournies dans le contexte.
 - Ne répète pas les mêmes chiffres si l'utilisateur réagit simplement avec "ok", "intéressant", "donc", "je vois", etc.
-- Si l'utilisateur fait une réaction courte, continue la conversation avec une synthèse ou une recommandation claire.
-- Si les données sont insuffisantes, dis-le.
+- Si l'utilisateur fait une réaction courte, continue avec une seule idée utile, pas un nouveau bilan.
+- Si l'utilisateur dit merci, ok merci, d'accord merci, ou indique que c'est compris, ne relance pas l'analyse.
+- Si les données sont insuffisantes, dis-le clairement.
 - Ne fais pas de promesse de gain.
 - Ne donne pas de conseil financier risqué.
 - Réponds en français simple.
-- Réponse courte : 3 à 6 phrases maximum.
-- Pour une question stratégique, structure la réponse ainsi : constat, risque, action prioritaire.
+- Réponse courte : 2 à 5 phrases maximum.
+- Pour une question stratégique, réponds en : constat, risque, action prioritaire.
         `.trim(),
       },
       ...safeHistory,
@@ -228,9 +250,7 @@ ${prompt}
 
 export async function askSalesAssistant(payload, maybeStructureId) {
   const question =
-    typeof payload === "object" && payload !== null
-      ? payload.question
-      : payload;
+    typeof payload === "object" && payload !== null ? payload.question : payload;
 
   const structureId =
     typeof payload === "object" && payload !== null
@@ -238,7 +258,9 @@ export async function askSalesAssistant(payload, maybeStructureId) {
       : maybeStructureId;
 
   const history =
-    typeof payload === "object" && payload !== null && Array.isArray(payload.history)
+    typeof payload === "object" &&
+    payload !== null &&
+    Array.isArray(payload.history)
       ? payload.history
       : [];
 
@@ -250,16 +272,29 @@ export async function askSalesAssistant(payload, maybeStructureId) {
     throw new Error("structureId est obligatoire pour le chatbot.");
   }
 
-  if (isClosingMessage(question)) {
-  return {
-    answer: "Avec plaisir. Continue surtout à suivre tes ventes et dépenses régulièrement, c’est comme ça que tu vas garder une vision claire.",
-    source: "conversation_closing",
-    intent: "closing",
-    salesCount: 0,
-    expensesCount: 0,
-    metrics: null,
-  };
-}
+  const messageType = classifyUserMessage(question);
+
+  if (messageType === "closing") {
+    return {
+      answer: "Avec plaisir 👍",
+      source: "conversation_closing",
+      intent: "closing",
+      salesCount: 0,
+      expensesCount: 0,
+      metrics: null,
+    };
+  }
+
+  if (messageType === "neutral") {
+    return {
+      answer: "",
+      source: "conversation_neutral",
+      intent: "neutral",
+      salesCount: 0,
+      expensesCount: 0,
+      metrics: null,
+    };
+  }
 
   const [sales, expenses] = await Promise.all([
     getSalesForPrompt(structureId, 200),
@@ -287,7 +322,8 @@ export async function askSalesAssistant(payload, maybeStructureId) {
     sales,
     expenses,
     metrics,
-    history
+    history,
+    messageType
   );
 
   return {
