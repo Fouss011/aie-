@@ -27,11 +27,11 @@ export async function getOrCreateSubscription(structureId) {
 export function isSubscriptionActive(subscription) {
   if (!subscription) return false;
 
-  if (subscription.is_active) return true;
+  const now = new Date();
 
-  if (subscription.trial_end) {
-    return new Date(subscription.trial_end) > new Date();
-  }
-
-  return false;
+  return (
+    subscription.is_active &&
+    subscription.current_period_end &&
+    new Date(subscription.current_period_end) > now
+  );
 }

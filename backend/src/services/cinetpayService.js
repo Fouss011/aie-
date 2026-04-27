@@ -47,3 +47,24 @@ export async function initializeCinetPayPayment({
 
   return data;
 }
+
+import fetch from "node-fetch";
+import { env } from "../config/env.js";
+
+export async function checkCinetPayPayment(transactionId) {
+  const response = await fetch("https://api-checkout.cinetpay.com/v2/payment/check", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      apikey: env.cinetpayApiKey,
+      site_id: env.cinetpaySiteId,
+      transaction_id: transactionId,
+    }),
+  });
+
+  const data = await response.json();
+
+  return data;
+}

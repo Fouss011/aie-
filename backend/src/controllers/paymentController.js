@@ -73,42 +73,74 @@ export async function validatePayment(req, res, next) {
   }
 }
 
-export async function cinetpayNotify(req, res, next) {
+import { checkCinetPayPayment } from "../services/cinetpayService.js";
+import { supabase } from "../config/supabaseClient.js";
+
+export async function cinetpayNotify(req, res) {
   try {
     const { cpm_trans_id } = req.body;
 
     if (!cpm_trans_id) {
-      return res.status(400).json({ error: "Transaction absente." });
+      return res.status(400).send("Transaction manquante");
     }
 
-    const { data: payment, error: paymentError } = await supabase
+    console.log("🔔 Notification CinetPay :", cpm_trans_id);
+
+    // 🔍 Vérification officielle chez CinetPay
+    const paymentCheck = await checkCinetPayPayment(cpm_trans_id);
+
+    const paymentStatus = paymentCheck?.data?.status;
+
+    if (paymentStatus !== "ACCEPTED") {
+      console.log("❌ Paiement non validé :", paymentStatus);
+      return res.status(200).send("Paiement non validé");
+    }
+
+    console.log("✅ Paiement confirmé");
+
+    // 🔎 Récupération du paiement
+    const { data: payment } = await supabase
       .from("payments")
       .select("*")
       .eq("transaction_id", cpm_trans_id)
       .single();
 
-    if (paymentError || !payment) {
-      return res.status(404).json({ error: "Paiement introuvable." });
+    if (!payment) {
+      console.log("❌ Paiement introuvable");
+      return res.status(200).send("OK");
     }
 
+    const structureId = payment.structure_id;
+
+    // 📅 Calcul 30 jours
+    const now = new Date();
+    const endDate = new Date();
+    endDate.setDate(now.getDate() + 30);
+
+    // ✅ Mise à jour paiement
     await supabase
       .from("payments")
       .update({
         status: "validated",
+        paid_at: now.toISOString(),
       })
-      .eq("id", payment.id);
+      .eq("transaction_id", cpm_trans_id);
 
+    // 🔥 Activation abonnement
     await supabase
       .from("subscriptions")
       .update({
         is_active: true,
         plan: "premium",
-        status: "active",
+        current_period_end: endDate.toISOString(),
       })
-      .eq("structure_id", payment.structure_id);
+      .eq("structure_id", structureId);
 
-    res.json({ success: true });
-  } catch (error) {
-    next(error);
+    console.log("🔥 Abonnement activé pour 30 jours");
+
+    return res.status(200).send("OK");
+  } catch (err) {
+    console.error("Erreur notify :", err);
+    return res.status(500).send("Erreur serveur");
   }
 }

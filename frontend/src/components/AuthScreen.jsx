@@ -11,9 +11,24 @@ export default function AuthScreen() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [errorText, setErrorText] = useState("");
+
+  const showPassword =
+    mode === "login" ? showLoginPassword : showSignupPassword;
+
+  function togglePasswordVisibility() {
+    if (mode === "login") {
+      setShowLoginPassword((value) => !value);
+    } else {
+      setShowSignupPassword((value) => !value);
+    }
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -147,14 +162,25 @@ export default function AuthScreen() {
             <label className="mb-1 block text-sm font-medium text-slate-700">
               Mot de passe
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-400"
-            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-20 text-sm outline-none focus:border-blue-400"
+              />
+
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-blue-700"
+              >
+                {showPassword ? "Masquer" : "Voir"}
+              </button>
+            </div>
           </div>
 
           {message && (
