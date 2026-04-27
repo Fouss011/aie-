@@ -71,7 +71,16 @@ function classifyUserMessage(question) {
     "et donc",
     "ok donc",
   ];
+  const greetings = [
+    "bonjour",
+    "salut",
+    "bonsoir",
+    "hello",
+    "coucou",
+    "bjr",
+  ];
 
+  if (greetings.includes(q)) return "greeting";
   if (closings.includes(q)) return "closing";
   if (followup.includes(q)) return "followup";
   if (neutral.includes(q)) return "neutral";
@@ -273,6 +282,17 @@ export async function askSalesAssistant(payload, maybeStructureId) {
   }
 
   const messageType = classifyUserMessage(question);
+  if (messageType === "greeting") {
+    return {
+      answer:
+        "Bonjour 👋 Je suis là. Tu veux qu’on regarde tes ventes, tes dépenses ou l’état de ta journée ?",
+      source: "conversation_greeting",
+      intent: "greeting",
+      salesCount: 0,
+      expensesCount: 0,
+      metrics: null,
+    };
+  }
 
   if (messageType === "closing") {
     return {
