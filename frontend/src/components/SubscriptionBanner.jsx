@@ -13,7 +13,7 @@ export default function SubscriptionBanner({ access }) {
 
   // 🔥 IMPORTANT
   const isExpired = remainingDays <= 0;
-  const isSubscribed = access?.isActive === true && isExpired;
+  const isSubscribed = access?.isSubscribed === true;
 
   async function handleRequestPayment() {
     if (!structureId || loading) return;
