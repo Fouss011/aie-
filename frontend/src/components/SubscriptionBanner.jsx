@@ -35,64 +35,66 @@ export default function SubscriptionBanner({ access }) {
   }
 
   return (
-    <div
-      className={`rounded-2xl border p-4 text-sm ${
-        isExpired
-          ? "border-red-200 bg-red-50 text-red-800"
-          : "border-amber-200 bg-amber-50 text-amber-800"
-      }`}
-    >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          {isExpired ? (
-            <>
-              <p className="font-semibold">
-                🚫 Ton essai est terminé.
-              </p>
-              <p className="mt-1">
-                Active ton abonnement pour continuer à utiliser Monyva Copilot.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="font-semibold">
-                ⏳ Il te reste {remainingDays} jour(s) d’essai.
-              </p>
-              {remainingDays <= 5 && (
-                <p className="mt-1">
-                  ⚠️ Ton essai se termine bientôt. Pense à activer ton abonnement.
-                </p>
-              )}
-            </>
-          )}
-
-          {message && (
-            <p className="mt-2 text-xs font-medium">
-              {message}
-            </p>
-          )}
-        </div>
-
-        {/* 🔥 BOUTON INTELLIGENT */}
+  <div
+    className={`rounded-2xl border p-4 text-sm ${
+      isSubscribed
+        ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+        : isExpired
+        ? "border-red-200 bg-red-50 text-red-800"
+        : "border-amber-200 bg-amber-50 text-amber-800"
+    }`}
+  >
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
         {isSubscribed ? (
-          <button
-            type="button"
-            disabled
-            className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm"
-          >
-            Abonné
-          </button>
+          <>
+            <p className="font-semibold">✅ Abonnement actif.</p>
+            <p className="mt-1">
+              Ton accès premium est actif pour {remainingDays} jour(s).
+            </p>
+          </>
+        ) : isExpired ? (
+          <>
+            <p className="font-semibold">🚫 Ton essai est terminé.</p>
+            <p className="mt-1">
+              Active ton abonnement pour continuer à utiliser Monyva Copilot.
+            </p>
+          </>
         ) : (
-          <button
-            type="button"
-            onClick={handleRequestPayment}
-            disabled={loading}
-            className="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? "Envoi..." : "Activer mon abonnement"}
-          </button>
+          <>
+            <p className="font-semibold">
+              ⏳ Il te reste {remainingDays} jour(s) d’essai.
+            </p>
+            {remainingDays <= 5 && (
+              <p className="mt-1">
+                ⚠️ Ton essai se termine bientôt. Pense à activer ton abonnement.
+              </p>
+            )}
+          </>
         )}
+
+        {message && <p className="mt-2 text-xs font-medium">{message}</p>}
       </div>
+
+      {isSubscribed ? (
+        <button
+          type="button"
+          disabled
+          className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm"
+        >
+          Abonné
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={handleRequestPayment}
+          disabled={loading}
+          className="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? "Envoi..." : "Activer mon abonnement"}
+        </button>
+      )}
     </div>
-  );
+  </div>
+);
 }
