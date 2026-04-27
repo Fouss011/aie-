@@ -1,6 +1,9 @@
 import crypto from "crypto";
 import { supabase } from "../config/supabaseClient.js";
-import { initializeCinetPayPayment } from "../services/cinetpayService.js";
+import {
+  initializeCinetPayPayment,
+  checkCinetPayPayment,
+} from "../services/cinetpayService.js";
 
 const SUBSCRIPTION_AMOUNT = 3000;
 
@@ -73,8 +76,6 @@ export async function validatePayment(req, res, next) {
   }
 }
 
-import { checkCinetPayPayment } from "../services/cinetpayService.js";
-import { supabase } from "../config/supabaseClient.js";
 
 export async function cinetpayNotify(req, res) {
   try {
