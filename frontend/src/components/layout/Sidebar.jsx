@@ -1,3 +1,13 @@
+import {
+  BarChart3,
+  FileText,
+  LogOut,
+  NotebookText,
+  ReceiptText,
+  UploadCloud,
+  WalletCards,
+  X,
+} from "lucide-react";
 import { useAuth } from "../../context/AuthProvider";
 
 const PAGE_META = {
@@ -7,6 +17,15 @@ const PAGE_META = {
   imports: "Excel / CSV",
   documents: "Pièces jointes",
   notes: "Journal terrain",
+};
+
+const PAGE_ICONS = {
+  dashboard: BarChart3,
+  activities: WalletCards,
+  charges: ReceiptText,
+  imports: UploadCloud,
+  documents: FileText,
+  notes: NotebookText,
 };
 
 export default function Sidebar({
@@ -34,90 +53,117 @@ export default function Sidebar({
           type="button"
           aria-label="Fermer le menu"
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-[2px] lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-[3px] lg:hidden"
         />
       )}
 
       <aside
         className={`
-          fixed inset-y-0 left-0 z-50 w-[290px] max-w-[84vw] transform p-3 transition-transform duration-300 lg:static lg:z-auto lg:block lg:w-[260px] lg:max-w-none lg:translate-x-0 lg:p-0
+          fixed inset-y-0 left-0 z-50 w-[296px] max-w-[86vw] transform p-3 transition-transform duration-300 lg:static lg:z-auto lg:block lg:w-[270px] lg:max-w-none lg:translate-x-0 lg:p-0
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        <div className="flex h-[calc(100dvh-24px)] flex-col overflow-hidden rounded-[30px] border border-white/40 bg-[linear-gradient(180deg,rgba(248,250,252,0.95),rgba(237,243,250,0.90))] shadow-[0_20px_60px_rgba(15,23,42,0.12)] backdrop-blur-xl lg:sticky lg:top-4 lg:h-auto">
-          <div className="flex items-center justify-between px-5 pb-0 pt-5 lg:hidden">
-            <div className="inline-flex rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-800">
+        <div className="relative flex h-[calc(100dvh-24px)] flex-col overflow-hidden rounded-[32px] border border-white/45 bg-slate-950 text-white shadow-[0_26px_80px_rgba(15,23,42,0.26)] lg:sticky lg:top-4 lg:h-[calc(100vh-32px)]">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-blue-500/25 blur-3xl" />
+            <div className="absolute -bottom-24 left-4 h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%)]" />
+          </div>
+
+          <div className="relative flex items-center justify-between px-5 pb-2 pt-5 lg:hidden">
+            <div className="inline-flex rounded-full border border-blue-300/30 bg-white/10 px-3 py-1 text-xs font-bold text-blue-100">
               Monyva
             </div>
 
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-sm font-medium text-slate-700"
+              className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/15"
+              aria-label="Fermer"
             >
-              Fermer
+              <X className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5 pb-5 pt-5">
+          <div className="relative flex-1 overflow-y-auto px-5 pb-5 pt-5">
             <div className="mb-6">
-              <div className="hidden lg:inline-flex rounded-full border border-blue-300/60 bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-800">
+              <div className="hidden rounded-full border border-blue-300/30 bg-white/10 px-3 py-1 text-xs font-bold text-blue-100 lg:inline-flex">
                 Monyva
               </div>
 
-              <h2 className="mt-3 text-2xl font-bold text-slate-950">
+              <h2 className="mt-4 text-[26px] font-black leading-tight tracking-tight text-white">
                 Pilotage simple
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Une interface claire pour suivre les recettes, dépenses,
-                documents et notes terrain.
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                Une interface légère pour suivre, comprendre et décider sans comptabilité lourde.
               </p>
             </div>
 
             <nav className="space-y-2">
               {menuItems.map((item) => {
                 const isActive = activePage === item.key;
+                const Icon = PAGE_ICONS[item.key] || BarChart3;
 
                 return (
                   <button
                     key={item.key}
                     type="button"
                     onClick={() => onNavigate(item.key)}
-                    className={`w-full rounded-2xl px-4 py-3 text-left transition ${
+                    className={`group w-full rounded-[22px] px-4 py-3 text-left transition duration-200 ${
                       isActive
-                        ? "bg-[#0B1F3A] text-white shadow-[0_10px_24px_rgba(11,31,58,0.28)]"
-                        : "border border-white/50 bg-white/55 text-slate-700 backdrop-blur-md hover:bg-white/80"
+                        ? "bg-white text-slate-950 shadow-[0_18px_44px_rgba(0,0,0,0.22)]"
+                        : "border border-white/10 bg-white/[0.06] text-slate-200 hover:bg-white/[0.10]"
                     }`}
                   >
-                    <div className="text-sm font-semibold">{item.label}</div>
-                    <div
-                      className={`mt-1 text-xs ${
-                        isActive ? "text-slate-300" : "text-slate-500"
-                      }`}
-                    >
-                      {PAGE_META[item.key] || ""}
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${
+                          isActive
+                            ? "bg-slate-950 text-white"
+                            : "bg-white/10 text-blue-100"
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </span>
+
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-black">
+                          {item.label}
+                        </span>
+                        <span
+                          className={`mt-0.5 block truncate text-xs ${
+                            isActive ? "text-slate-500" : "text-slate-400"
+                          }`}
+                        >
+                          {PAGE_META[item.key] || ""}
+                        </span>
+                      </span>
                     </div>
                   </button>
                 );
               })}
             </nav>
 
-            <div className="mt-6 rounded-2xl border border-white/60 bg-white/45 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
-                Statut
+            <div className="mt-6 rounded-[24px] border border-white/10 bg-white/[0.07] p-4 backdrop-blur-xl">
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-400">
+                Positionnement
               </p>
-              <p className="mt-2 text-lg font-semibold text-emerald-600">
-                Opérationnel
+              <p className="mt-2 text-sm font-bold leading-6 text-white">
+                Suivi intelligent des activités, pas un ERP lourd.
+              </p>
+              <p className="mt-2 text-xs leading-5 text-slate-400">
+                Recettes, dépenses, résultat et conseils utiles.
               </p>
             </div>
 
-            <div className="mt-6 pb-6">
+            <div className="mt-5 pb-6">
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-[22px] border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-bold text-slate-200 transition hover:bg-rose-500/15 hover:text-rose-100"
               >
+                <LogOut className="h-4 w-4" />
                 Déconnexion
               </button>
             </div>

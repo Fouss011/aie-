@@ -17,16 +17,16 @@ export default function AppShell({
   }
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#E7EDF5] text-slate-900">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#EAF0F7] text-slate-950 antialiased">
       <div className="relative min-h-screen w-full overflow-x-hidden">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.10),transparent_24%),radial-gradient(circle_at_top_right,rgba(15,23,42,0.08),transparent_22%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.08),transparent_28%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22),rgba(15,23,42,0.05))]" />
-          <div className="absolute top-[-70px] right-[-50px] h-[260px] w-[260px] rounded-full bg-blue-200/35 blur-3xl" />
-          <div className="absolute bottom-[-110px] left-[-60px] h-[280px] w-[280px] rounded-full bg-slate-300/45 blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.12),transparent_25%),radial-gradient(circle_at_top_right,rgba(2,132,199,0.10),transparent_26%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.08),transparent_28%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55),rgba(226,232,240,0.30))]" />
+          <div className="absolute -right-28 top-[-110px] h-[360px] w-[360px] rounded-full bg-blue-300/30 blur-3xl" />
+          <div className="absolute -left-24 bottom-[-120px] h-[330px] w-[330px] rounded-full bg-slate-400/25 blur-3xl" />
         </div>
 
-        <div className="relative mx-auto flex min-h-screen w-full max-w-[1600px] gap-4 px-3 py-3 sm:gap-6 sm:px-6 sm:py-4 lg:px-8">
+        <div className="relative mx-auto flex min-h-screen w-full max-w-[1580px] gap-4 px-3 py-3 sm:gap-5 sm:px-5 sm:py-4 lg:px-8">
           <Sidebar
             activePage={activePage}
             onNavigate={handleNavigate}
