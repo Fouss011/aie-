@@ -29,7 +29,7 @@ export default function MainApp() {
   function renderPage() {
     switch (activePage) {
       case "dashboard":
-        return <DashboardPage />;
+        return <DashboardPage activeStructure={activeStructure} />;
       case "activities":
         return <ActivitiesPage />;
       case "charges":
@@ -39,9 +39,9 @@ export default function MainApp() {
       case "documents":
         return <DocumentsPage />;
       case "notes":
-        return <NotesPage />;
+        return <NotesPage activeStructure={activeStructure} />;
       default:
-        return <DashboardPage />;
+        return <DashboardPage activeStructure={activeStructure} />;
     }
   }
 
