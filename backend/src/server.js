@@ -10,6 +10,7 @@ import importsRoutes from "./routes/importsRoutes.js";
 import documentsRoutes from "./routes/documentsRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import accessRoutes from "./routes/accessRoutes.js";
+import notesRoutes from './routes/notesRoutes.js'
 
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
@@ -47,6 +48,7 @@ app.use("/api/imports", importsRoutes);
 app.use("/api/documents", documentsRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/access", accessRoutes);
+app.use('/api/notes', notesRoutes)
 
 app.use(notFound);
 app.use(errorHandler);
