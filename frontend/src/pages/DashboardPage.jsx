@@ -332,6 +332,35 @@ export default function DashboardPage() {
 
       <KpiGrid kpis={kpis} />
 
+      <div className="rounded-[24px] border border-white/70 bg-white/70 p-4 shadow-sm backdrop-blur-xl">
+  <div className="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p className="text-xs font-black uppercase tracking-[0.20em] text-slate-500">
+        Structure active
+      </p>
+
+      <h3 className="mt-1 text-xl font-black text-slate-900">
+        {activeStructure?.name || "Ma structure"}
+      </h3>
+
+      <p className="mt-1 text-sm text-slate-500">
+        {activeStructure?.sector ||
+          "Gestion simplifiée de votre activité"}
+      </p>
+    </div>
+
+    <div className="rounded-2xl bg-slate-950 px-4 py-3 text-white">
+      <p className="text-xs uppercase tracking-[0.18em] text-slate-300">
+        Activité
+      </p>
+
+      <p className="mt-1 text-lg font-black">
+        {kpis?.salesCount || 0} opérations
+      </p>
+    </div>
+  </div>
+</div>
+
       {canUsePremium ? (
         <InsightCard insight={insight} kpis={kpis} />
       ) : (
