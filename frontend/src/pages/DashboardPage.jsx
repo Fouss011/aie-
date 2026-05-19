@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowRight,
-  Building2,
   CheckCircle2,
-  MapPin,
   Sparkles,
   Target,
   TrendingDown,
@@ -187,6 +184,8 @@ export default function DashboardPage() {
       expensesToday,
       monthSales,
       monthExpenses,
+      sales,
+      expenses,
     });
   }, [sales, expenses]);
 
@@ -287,14 +286,14 @@ export default function DashboardPage() {
     <div className="space-y-5">
       {access && <SubscriptionBanner access={access} />}
 
-      <section className="relative overflow-hidden rounded-[30px] border border-white/60 bg-slate-950 p-5 text-white shadow-[0_30px_90px_rgba(15,23,42,0.22)] sm:p-6 lg:p-7">
+      <section className="relative overflow-hidden rounded-[28px] border border-white/60 bg-slate-950 p-5 text-white shadow-[0_26px_78px_rgba(15,23,42,0.20)] sm:p-6">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-500/25 blur-3xl" />
           <div className="absolute -bottom-28 left-10 h-72 w-72 rounded-full bg-emerald-400/15 blur-3xl" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%)]" />
         </div>
 
-        <div className="relative grid gap-6 xl:grid-cols-[1.45fr_0.85fr] xl:items-stretch">
+        <div className="relative grid gap-5 xl:grid-cols-[1.2fr_0.8fr] xl:items-stretch">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ${businessStatus.badge}`}>
@@ -304,75 +303,29 @@ export default function DashboardPage() {
 
               <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-100 backdrop-blur-md">
                 <Sparkles className="h-3.5 w-3.5" />
-                Pilotage intelligent
+                Décision rapide
               </span>
             </div>
 
-            <h1 className="mt-5 max-w-3xl text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-              Suivez votre argent et prenez de meilleures décisions chaque jour.
+            <h1 className="mt-4 max-w-3xl text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">
+              Ce mois-ci : {formatMoney(kpis?.profitMonth)} de résultat.
             </h1>
 
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-              {businessStatus.title} {businessStatus.message}
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+              {businessStatus.title} {insight?.action || businessStatus.message}
             </p>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Résultat mois
-                </p>
-                <p className={`mt-2 break-words text-2xl font-black ${Number(kpis?.profitMonth || 0) >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
-                  {formatMoney(kpis?.profitMonth)}
-                </p>
-              </div>
-
-              <div className="rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Recettes mois
-                </p>
-                <p className="mt-2 break-words text-2xl font-black text-white">
-                  {formatMoney(kpis?.salesMonth)}
-                </p>
-              </div>
-
-              <div className="rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Dépenses mois
-                </p>
-                <p className="mt-2 break-words text-2xl font-black text-white">
-                  {formatMoney(kpis?.expensesMonth)}
-                </p>
-              </div>
-            </div>
           </div>
 
-          <div className="flex h-full flex-col justify-between rounded-[26px] border border-white/15 bg-white/[0.08] p-5 backdrop-blur-xl">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-200">
-                Conseil Monyva
-              </p>
-              <p className="mt-3 text-xl font-black leading-tight text-white">
-                {insight?.message || "Ajoutez vos données pour obtenir une analyse."}
-              </p>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                Le but n’est pas de faire une comptabilité lourde : c’est de comprendre rapidement ce qui avance, ce qui coûte et quoi corriger.
-              </p>
-            </div>
-
-            <div className="mt-6 grid gap-3">
-              <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
-                <p className="text-xs text-slate-400">Question utile à poser au copilote</p>
-                <p className="mt-1 flex items-center gap-2 text-sm font-bold text-white">
-                  Pourquoi mon résultat baisse ? <ArrowRight className="h-4 w-4" />
-                </p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
-                <p className="text-xs text-slate-400">Décision rapide</p>
-                <p className="mt-1 text-sm font-bold text-white">
-                  Regarder les dépenses avant d’ajouter de nouvelles charges.
-                </p>
-              </div>
-            </div>
+          <div className="rounded-[24px] border border-white/15 bg-white/[0.08] p-4 backdrop-blur-xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-200">
+              Monyva observe
+            </p>
+            <p className="mt-2 text-xl font-black leading-tight text-white">
+              {insight?.message || "Ajoutez vos données pour obtenir une analyse."}
+            </p>
+            <p className="mt-3 text-sm leading-6 text-slate-300">
+              {insight?.detail || "L’objectif est de voir vite ce qui rapporte, ce qui coûte et quoi corriger."}
+            </p>
           </div>
         </div>
       </section>
@@ -389,51 +342,6 @@ export default function DashboardPage() {
       )}
 
       <MonthlyFinanceOverview sales={sales} expenses={expenses} />
-
-      <section className="rounded-[28px] border border-white/50 bg-white/55 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">
-              Structure active
-            </p>
-            <h2 className="mt-2 break-words text-2xl font-black text-slate-950 sm:text-3xl">
-              {activeStructure?.name || "Ma structure"}
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Votre espace reste simple : recettes, dépenses, résultat, historique et décisions utiles.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
-          >
-            Déconnexion
-          </button>
-        </div>
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm">
-            <Building2 className="h-5 w-5 text-slate-500" />
-            <p className="mt-3 text-[11px] uppercase tracking-[0.20em] text-slate-500">Secteur</p>
-            <p className="mt-2 text-sm font-bold text-slate-900">{activeStructure?.sector || "Non renseigné"}</p>
-          </div>
-
-          <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm">
-            <MapPin className="h-5 w-5 text-slate-500" />
-            <p className="mt-3 text-[11px] uppercase tracking-[0.20em] text-slate-500">Localisation</p>
-            <p className="mt-2 text-sm font-bold text-slate-900">
-              {[activeStructure?.city, activeStructure?.country].filter(Boolean).join(", ") || "Non renseignée"}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm sm:col-span-2">
-            <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">Identifiant</p>
-            <p className="mt-2 break-all text-sm font-bold text-slate-900">{activeStructure?.slug || "—"}</p>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

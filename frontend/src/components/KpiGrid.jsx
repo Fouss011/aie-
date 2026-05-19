@@ -1,154 +1,123 @@
 import {
-  Activity,
   ArrowDownRight,
   ArrowUpRight,
   BarChart3,
-  CalendarDays,
-  CircleDollarSign,
-  ReceiptText,
-  Star,
+  Calendar,
+  Wallet,
+  Activity,
 } from "lucide-react";
+
 import { formatMoney } from "../utils/finance";
 
-function formatValue(value) {
-  if (value === null || value === undefined || value === "") return "0";
-  return String(value);
+function Card({
+  title,
+  subtitle,
+  value,
+  icon: Icon,
+  color,
+  progress,
+}) {
+  return (
+    <div className="group relative overflow-hidden rounded-[28px] border border-white/70 bg-white/75 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-70" />
+
+      <div className="relative">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold text-slate-500">
+              {title}
+            </p>
+
+            <p className="mt-1 text-sm text-slate-400">
+              {subtitle}
+            </p>
+          </div>
+
+          <div
+            className={`grid h-12 w-12 place-items-center rounded-2xl ${color.bg}`}
+          >
+            <Icon className={`h-5 w-5 ${color.icon}`} />
+          </div>
+        </div>
+
+        <h3 className={`mt-6 text-3xl font-black tracking-tight ${color.text}`}>
+          {value}
+        </h3>
+
+        <div className="mt-6 h-2 overflow-hidden rounded-full bg-slate-200">
+          <div
+            className={`h-full rounded-full ${color.bar}`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function money(value) {
-  return formatMoney(Number(value || 0));
-}
-
-export default function KpiGrid({ kpis = {} }) {
-  const cards = [
-    {
-      title: "Recettes du jour",
-      value: money(kpis.salesToday),
-      subtitle: "Argent entré aujourd’hui",
-      icon: ArrowUpRight,
-      tone: "text-emerald-600",
-      ring: "bg-emerald-50 text-emerald-700",
-    },
-    {
-      title: "Dépenses du jour",
-      value: money(kpis.expensesToday),
-      subtitle: "Argent sorti aujourd’hui",
-      icon: ArrowDownRight,
-      tone: "text-rose-600",
-      ring: "bg-rose-50 text-rose-700",
-    },
-    {
-      title: "Résultat du jour",
-      value: money(kpis.profitToday),
-      subtitle: Number(kpis.profitToday || 0) >= 0 ? "Journée positive" : "Journée à surveiller",
-      icon: CircleDollarSign,
-      tone: Number(kpis.profitToday || 0) >= 0 ? "text-blue-700" : "text-rose-600",
-      ring: "bg-blue-50 text-blue-700",
-    },
-    {
-      title: "Recettes du mois",
-      value: money(kpis.salesMonth),
-      subtitle: "Cumul mensuel",
-      icon: CalendarDays,
-      tone: "text-slate-950",
-      ring: "bg-slate-100 text-slate-700",
-    },
-    {
-      title: "Résultat du mois",
-      value: money(kpis.profitMonth),
-      subtitle: Number(kpis.profitMonth || 0) >= 0 ? "Activité rentable" : "Marge négative",
-      icon: BarChart3,
-      tone: Number(kpis.profitMonth || 0) >= 0 ? "text-emerald-700" : "text-rose-600",
-      ring: Number(kpis.profitMonth || 0) >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700",
-      featured: true,
-    },
-    {
-      title: "Activités enregistrées",
-      value: formatValue(kpis.salesCount),
-      subtitle: "Recettes saisies",
-      icon: Activity,
-      tone: "text-slate-950",
-      ring: "bg-violet-50 text-violet-700",
-    },
-    {
-      title: "Dépenses enregistrées",
-      value: formatValue(kpis.expensesCount),
-      subtitle: "Charges saisies",
-      icon: ReceiptText,
-      tone: "text-slate-950",
-      ring: "bg-amber-50 text-amber-700",
-    },
-    {
-      title: "Activité phare",
-      value: formatValue(kpis.topProduct || "Aucune donnée"),
-      subtitle: "Tendance principale",
-      icon: Star,
-      tone: "text-slate-950",
-      ring: "bg-yellow-50 text-yellow-700",
-      isText: true,
-      full: true,
-    },
-  ];
+export default function KpiGrid({ kpis }) {
+  const salesToday = Number(kpis?.salesToday || 0);
+  const expensesToday = Number(kpis?.expensesToday || 0);
+  const profitToday = Number(kpis?.profitToday || 0);
+  const salesMonth = Number(kpis?.salesMonth || 0);
 
   return (
-    <section className="w-full overflow-x-hidden">
-      <div className="mb-3 flex items-end justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">
-            Vue rapide
-          </p>
-          <h2 className="mt-1 text-xl font-black text-slate-950 sm:text-2xl">
-            Ce qu’il faut retenir
-          </h2>
-        </div>
-        <p className="hidden max-w-sm text-right text-sm leading-6 text-slate-500 md:block">
-          Des chiffres simples pour décider vite, sans comptabilité lourde.
-        </p>
-      </div>
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <Card
+        title="Recettes du jour"
+        subtitle="Entrées enregistrées"
+        value={formatMoney(salesToday)}
+        icon={ArrowUpRight}
+        progress={75}
+        color={{
+          text: "text-emerald-600",
+          bg: "bg-emerald-100",
+          icon: "text-emerald-600",
+          bar: "bg-emerald-500",
+        }}
+      />
 
-      <div className="grid gap-3 min-[380px]:grid-cols-2 xl:grid-cols-4">
-        {cards.map((card) => {
-          const Icon = card.icon;
+      <Card
+        title="Charges du jour"
+        subtitle="Sorties enregistrées"
+        value={formatMoney(expensesToday)}
+        icon={ArrowDownRight}
+        progress={45}
+        color={{
+          text: "text-rose-600",
+          bg: "bg-rose-100",
+          icon: "text-rose-600",
+          bar: "bg-rose-500",
+        }}
+      />
 
-          return (
-            <div
-              key={card.title}
-              className={`group min-w-0 rounded-[24px] border border-white/60 bg-white/65 p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] backdrop-blur-xl transition duration-200 hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-[0_22px_55px_rgba(15,23,42,0.10)] sm:p-5 ${
-                card.featured ? "ring-1 ring-emerald-200/70" : ""
-              } ${card.full ? "min-[380px]:col-span-2 xl:col-span-1" : ""}`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-500 sm:text-sm">
-                    {card.title}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">{card.subtitle}</p>
-                </div>
+      <Card
+        title="Résultat du jour"
+        subtitle="Situation actuelle"
+        value={formatMoney(profitToday)}
+        icon={Wallet}
+        progress={65}
+        color={{
+          text: "text-blue-600",
+          bg: "bg-blue-100",
+          icon: "text-blue-600",
+          bar: "bg-blue-500",
+        }}
+      />
 
-                <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${card.ring}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-              </div>
-
-              <div className="mt-4 min-h-[46px] sm:min-h-[56px]">
-                <h3
-                  className={`break-words font-black tracking-tight ${
-                    card.isText
-                      ? "text-xl leading-tight sm:text-[26px]"
-                      : "text-[22px] leading-tight sm:text-[29px]"
-                  } ${card.tone}`}
-                >
-                  {card.value}
-                </h3>
-              </div>
-
-              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                <div className={`h-full w-2/3 rounded-full ${card.featured ? "bg-emerald-400" : "bg-slate-300"}`} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
+      <Card
+        title="Recettes du mois"
+        subtitle="Vision mensuelle"
+        value={formatMoney(salesMonth)}
+        icon={Calendar}
+        progress={85}
+        color={{
+          text: "text-slate-900",
+          bg: "bg-slate-100",
+          icon: "text-slate-700",
+          bar: "bg-slate-900",
+        }}
+      />
+    </div>
   );
 }
