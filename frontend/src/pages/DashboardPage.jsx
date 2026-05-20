@@ -340,12 +340,21 @@ export default function DashboardPage() {
       </p>
 
       <h3 className="mt-1 text-xl font-black text-slate-900">
-        {activeStructure?.name || "Ma structure"}
+        {activeStructure?.name ||
+          activeStructure?.label ||
+          activeStructure?.title ||
+          activeStructure?.business_name ||
+          activeStructure?.structure_name ||
+          "Structure sans nom"}
       </h3>
 
       <p className="mt-1 text-sm text-slate-500">
         {activeStructure?.sector ||
-          "Gestion simplifiée de votre activité"}
+          activeStructure?.activity ||
+          activeStructure?.business_sector ||
+          activeStructure?.activity_sector ||
+          activeStructure?.description ||
+          "Espace de suivi intelligent"}
       </p>
     </div>
 
@@ -355,7 +364,7 @@ export default function DashboardPage() {
       </p>
 
       <p className="mt-1 text-lg font-black">
-        {kpis?.salesCount || 0} opérations
+        {(kpis?.salesCount || 0) + (kpis?.expensesCount || 0)} opérations
       </p>
     </div>
   </div>
