@@ -143,6 +143,7 @@ function getBusinessStatus(kpis) {
 
 export default function DashboardPage() {
   const { activeStructure, logout } = useAuth();
+  console.log("ACTIVE STRUCTURE DASHBOARD =>", activeStructure);
 
   const [sales, setSales] = useState([]);
   const [expenses, setExpenses] = useState([]);
@@ -335,75 +336,6 @@ export default function DashboardPage() {
 
       <KpiGrid kpis={kpis} />
 
-      <section className="rounded-[28px] border border-white/60 bg-white/70 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:p-6">
-  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-    <div>
-      <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-500">
-        Structure active
-      </p>
-
-      <h2 className="mt-2 break-words text-2xl font-black text-slate-950 sm:text-3xl">
-        {activeStructure?.name || "Ma structure"}
-      </h2>
-
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-        Espace sécurisé de suivi : recettes, dépenses, résultat, historique et décisions utiles.
-      </p>
-    </div>
-
-    <button
-      type="button"
-      onClick={handleLogout}
-      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-    >
-      Déconnexion
-    </button>
-  </div>
-
-  <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-    <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm">
-      <Building2 className="h-5 w-5 text-slate-500" />
-      <p className="mt-3 text-[11px] uppercase tracking-[0.20em] text-slate-500">
-        Secteur
-      </p>
-      <p className="mt-2 text-sm font-bold text-slate-900">
-        {activeStructure?.sector || "Non renseigné"}
-      </p>
-    </div>
-
-    <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm">
-      <MapPin className="h-5 w-5 text-slate-500" />
-      <p className="mt-3 text-[11px] uppercase tracking-[0.20em] text-slate-500">
-        Localisation
-      </p>
-      <p className="mt-2 text-sm font-bold text-slate-900">
-        {[activeStructure?.city, activeStructure?.country]
-          .filter(Boolean)
-          .join(", ") || "Non renseignée"}
-      </p>
-    </div>
-
-    <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm">
-      <ArrowRight className="h-5 w-5 text-slate-500" />
-      <p className="mt-3 text-[11px] uppercase tracking-[0.20em] text-slate-500">
-        Opérations
-      </p>
-      <p className="mt-2 text-sm font-bold text-slate-900">
-        {(kpis?.salesCount || 0) + (kpis?.expensesCount || 0)} opérations
-      </p>
-    </div>
-
-    <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm">
-      <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">
-        Identifiant
-      </p>
-      <p className="mt-2 break-all text-sm font-bold text-slate-900">
-        {activeStructure?.slug || "—"}
-      </p>
-    </div>
-  </div>
-</section>
-
       {canUsePremium ? (
         <InsightCard insight={insight} kpis={kpis} />
       ) : (
@@ -414,6 +346,39 @@ export default function DashboardPage() {
       )}
 
       <MonthlyFinanceOverview sales={sales} expenses={expenses} />
+
+      <section className="rounded-[28px] border border-white/60 bg-white/70 p-5 shadow-sm backdrop-blur-xl">
+  <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-500">
+    Structure active
+  </p>
+
+  <h2 className="mt-2 text-2xl font-black text-slate-950">
+    {activeStructure?.name}
+  </h2>
+
+  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+    <div className="rounded-2xl bg-white/70 p-4">
+      <p className="text-xs font-bold uppercase text-slate-500">Secteur</p>
+      <p className="mt-1 font-black text-slate-900">
+        {activeStructure?.sector}
+      </p>
+    </div>
+
+    <div className="rounded-2xl bg-white/70 p-4">
+      <p className="text-xs font-bold uppercase text-slate-500">Pays</p>
+      <p className="mt-1 font-black text-slate-900">
+        {activeStructure?.country}
+      </p>
+    </div>
+
+    <div className="rounded-2xl bg-white/70 p-4">
+      <p className="text-xs font-bold uppercase text-slate-500">Identifiant</p>
+      <p className="mt-1 font-black text-slate-900">
+        {activeStructure?.slug}
+      </p>
+    </div>
+  </div>
+</section>
     </div>
   );
 }
