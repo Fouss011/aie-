@@ -5,6 +5,9 @@ import {
   Target,
   TrendingDown,
   TrendingUp,
+  Building2,
+  MapPin,
+  ArrowRight,
 } from "lucide-react";
 import { fetchSales } from "../api/salesApi";
 import { fetchExpenses } from "../api/expensesApi";
@@ -332,43 +335,74 @@ export default function DashboardPage() {
 
       <KpiGrid kpis={kpis} />
 
-      <div className="rounded-[24px] border border-white/70 bg-white/70 p-4 shadow-sm backdrop-blur-xl">
-  <div className="flex flex-wrap items-center justify-between gap-3">
+      <section className="rounded-[28px] border border-white/60 bg-white/70 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:p-6">
+  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
     <div>
-      <p className="text-xs font-black uppercase tracking-[0.20em] text-slate-500">
+      <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-500">
         Structure active
       </p>
 
-      <h3 className="mt-1 text-xl font-black text-slate-900">
-        {activeStructure?.name ||
-          activeStructure?.label ||
-          activeStructure?.title ||
-          activeStructure?.business_name ||
-          activeStructure?.structure_name ||
-          "Structure sans nom"}
-      </h3>
+      <h2 className="mt-2 break-words text-2xl font-black text-slate-950 sm:text-3xl">
+        {activeStructure?.name || "Ma structure"}
+      </h2>
 
-      <p className="mt-1 text-sm text-slate-500">
-        {activeStructure?.sector ||
-          activeStructure?.activity ||
-          activeStructure?.business_sector ||
-          activeStructure?.activity_sector ||
-          activeStructure?.description ||
-          "Espace de suivi intelligent"}
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+        Espace sécurisé de suivi : recettes, dépenses, résultat, historique et décisions utiles.
       </p>
     </div>
 
-    <div className="rounded-2xl bg-slate-950 px-4 py-3 text-white">
-      <p className="text-xs uppercase tracking-[0.18em] text-slate-300">
-        Activité
-      </p>
+    <button
+      type="button"
+      onClick={handleLogout}
+      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+    >
+      Déconnexion
+    </button>
+  </div>
 
-      <p className="mt-1 text-lg font-black">
+  <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm">
+      <Building2 className="h-5 w-5 text-slate-500" />
+      <p className="mt-3 text-[11px] uppercase tracking-[0.20em] text-slate-500">
+        Secteur
+      </p>
+      <p className="mt-2 text-sm font-bold text-slate-900">
+        {activeStructure?.sector || "Non renseigné"}
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm">
+      <MapPin className="h-5 w-5 text-slate-500" />
+      <p className="mt-3 text-[11px] uppercase tracking-[0.20em] text-slate-500">
+        Localisation
+      </p>
+      <p className="mt-2 text-sm font-bold text-slate-900">
+        {[activeStructure?.city, activeStructure?.country]
+          .filter(Boolean)
+          .join(", ") || "Non renseignée"}
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm">
+      <ArrowRight className="h-5 w-5 text-slate-500" />
+      <p className="mt-3 text-[11px] uppercase tracking-[0.20em] text-slate-500">
+        Opérations
+      </p>
+      <p className="mt-2 text-sm font-bold text-slate-900">
         {(kpis?.salesCount || 0) + (kpis?.expensesCount || 0)} opérations
       </p>
     </div>
+
+    <div className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-sm">
+      <p className="text-[11px] uppercase tracking-[0.20em] text-slate-500">
+        Identifiant
+      </p>
+      <p className="mt-2 break-all text-sm font-bold text-slate-900">
+        {activeStructure?.slug || "—"}
+      </p>
+    </div>
   </div>
-</div>
+</section>
 
       {canUsePremium ? (
         <InsightCard insight={insight} kpis={kpis} />
