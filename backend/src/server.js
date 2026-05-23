@@ -11,6 +11,7 @@ import documentsRoutes from "./routes/documentsRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import accessRoutes from "./routes/accessRoutes.js";
 import notesRoutes from './routes/notesRoutes.js'
+import personalRoutes from "./routes/personal.routes.js";
 
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
@@ -49,6 +50,7 @@ app.use("/api/documents", documentsRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/access", accessRoutes);
 app.use('/api/notes', notesRoutes)
+app.use("/api/personal", personalRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

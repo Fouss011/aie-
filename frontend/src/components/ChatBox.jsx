@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bot,
   ChevronDown,
@@ -20,23 +20,41 @@ function cleanMessagesForApi(messages) {
     }));
 }
 
-const QUICK_QUESTIONS = [
+const BUSINESS_QUESTIONS = [
   "Pourquoi mon résultat baisse ?",
   "Que dois-je améliorer cette semaine ?",
   "Quelle activité rapporte le plus ?",
 ];
 
-export default function ChatBox() {
-  const { activeStructure } = useAuth();
+const PERSONAL_QUESTIONS = [
+  "Combien il me reste ?",
+  "Est-ce que je dépense trop en bouffe ?",
+  "Puis-je économiser 200 € ce mois-ci ?",
+];
+
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+export default function ChatBox({ universe = "business" }) {
+  const { activeStructure, user } = useAuth();
+
+  const isPersonal = universe === "personal";
+  console.log("CHATBOX UNIVERSE =>", universe);
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const [messages, setMessages] = useState([
-    {
+  const initialMessage = useMemo(
+    () => ({
       role: "assistant",
-      content:
-        "Bonjour. Je suis Monyva. Je peux analyser ton activité et détecter ce qui mérite ton attention.",
-    },
+      content: isPersonal
+        ? "Bonjour 👋 Je suis ton copilote financier personnel. Je peux analyser ton reste à vivre, tes dépenses, tes budgets, tes charges fixes et ton épargne."
+        : "Bonjour 👋 Je suis Monyva. Je peux analyser ton activité et détecter ce qui mérite ton attention.",
+    }),
+    [isPersonal]
+  );
+
+  const [messages, setMessages] = useState([
+    initialMessage,
   ]);
 
   const [input, setInput] = useState("");
@@ -45,6 +63,16 @@ export default function ChatBox() {
   const bottomRef = useRef(null);
 
   const structureId = activeStructure?.id;
+  const userId = user?.id || activeStructure?.user_id;
+
+  const quickQuestions = isPersonal
+    ? PERSONAL_QUESTIONS
+    : BUSINESS_QUESTIONS;
+
+  useEffect(() => {
+    setMessages([initialMessage]);
+    setInput("");
+  }, [initialMessage]);
 
   useEffect(() => {
     if (isOpen) {
@@ -59,13 +87,26 @@ export default function ChatBox() {
 
     if (!question || loading) return;
 
-    if (!structureId) {
+    if (!isPersonal && !structureId) {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
           content:
             "Aucune structure active sélectionnée. Choisis une structure avant d’utiliser Monyva.",
+        },
+      ]);
+
+      return;
+    }
+
+    if (isPersonal && !userId) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "Je n’arrive pas à identifier ton compte. Reconnecte-toi puis réessaie.",
         },
       ]);
 
@@ -86,11 +127,44 @@ export default function ChatBox() {
     try {
       const history = cleanMessagesForApi(nextMessages);
 
-      const result = await askAssistant(
-        question,
-        structureId,
-        history
-      );
+      let result;
+
+      if (isPersonal) {
+        const response = await fetch(
+          `${API_URL}/api/personal/copilot`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId,
+              message: question,
+              history,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            "Impossible de contacter le Copilot Perso."
+          );
+        }
+
+        const data = await response.json();
+
+        result = {
+          answer:
+            data?.response ||
+            "Je n’ai pas trouvé de réponse pour le moment.",
+        };
+      } else {
+        result = await askAssistant(
+          question,
+          structureId,
+          history
+        );
+      }
 
       setMessages((prev) => [
         ...prev,
@@ -136,8 +210,9 @@ export default function ChatBox() {
     setMessages([
       {
         role: "assistant",
-        content:
-          "Conversation réinitialisée. Pose-moi une question sur ton activité.",
+        content: isPersonal
+          ? "Conversation réinitialisée. Pose-moi une question sur ton budget personnel."
+          : "Conversation réinitialisée. Pose-moi une question sur ton activité.",
       },
     ]);
   }
@@ -146,8 +221,6 @@ export default function ChatBox() {
     <>
       {isOpen && (
         <div className="fixed inset-x-3 bottom-4 z-50 flex h-[78vh] max-h-[680px] flex-col overflow-hidden rounded-[30px] border border-white/60 bg-white/95 shadow-[0_30px_90px_rgba(15,23,42,0.28)] backdrop-blur-2xl sm:inset-x-auto sm:right-6 sm:h-[620px] sm:w-[430px]">
-          {/* HEADER */}
-
           <div className="relative overflow-hidden border-b border-white/10 bg-slate-950 p-4 text-white">
             <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-blue-500/30 blur-3xl" />
 
@@ -167,11 +240,15 @@ export default function ChatBox() {
                   </p>
 
                   <h2 className="mt-1 text-lg font-black">
-                    Assistant de décision
+                    {isPersonal
+                      ? "Assistant financier personnel"
+                      : "Assistant de décision"}
                   </h2>
 
                   <p className="mt-1 text-xs leading-5 text-slate-300">
-                    Analyse intelligente de ton activité.
+                    {isPersonal
+                      ? "Analyse intelligente de ton budget personnel."
+                      : "Analyse intelligente de ton activité."}
                   </p>
                 </div>
               </button>
@@ -196,8 +273,6 @@ export default function ChatBox() {
             </div>
           </div>
 
-          {/* BODY */}
-
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-slate-50/80 p-3 sm:p-4">
             {messages.length <= 1 && (
               <div className="grid gap-2 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -206,7 +281,7 @@ export default function ChatBox() {
                   Questions rapides
                 </p>
 
-                {QUICK_QUESTIONS.map((question) => (
+                {quickQuestions.map((question) => (
                   <button
                     key={question}
                     type="button"
@@ -226,9 +301,7 @@ export default function ChatBox() {
                 <div
                   key={`${message.role}-${index}`}
                   className={`flex ${
-                    isUser
-                      ? "justify-end"
-                      : "justify-start"
+                    isUser ? "justify-end" : "justify-start"
                   }`}
                 >
                   <div
@@ -251,15 +324,15 @@ export default function ChatBox() {
             {loading && (
               <div className="flex justify-start">
                 <div className="rounded-[24px] border-l-4 border-blue-500 bg-white px-4 py-3 text-sm font-medium text-slate-500 shadow-sm">
-                  Monyva analyse votre activité...
+                  {isPersonal
+                    ? "Monyva analyse votre budget..."
+                    : "Monyva analyse votre activité..."}
                 </div>
               </div>
             )}
 
             <div ref={bottomRef} />
           </div>
-
-          {/* FOOTER */}
 
           <div className="shrink-0 border-t border-slate-100 bg-white p-3">
             <form
@@ -271,7 +344,11 @@ export default function ChatBox() {
                 onChange={(event) =>
                   setInput(event.target.value)
                 }
-                placeholder="Ex : Que dois-je améliorer ?"
+                placeholder={
+                  isPersonal
+                    ? "Ex : Est-ce que je dépense trop en bouffe ?"
+                    : "Ex : Que dois-je améliorer ?"
+                }
                 className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
               />
 

@@ -7,6 +7,10 @@ import {
   UploadCloud,
   WalletCards,
   X,
+  UserRound,
+  BriefcaseBusiness,
+  PiggyBank,
+  ListChecks,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthProvider";
 
@@ -17,6 +21,11 @@ const PAGE_META = {
   imports: "Excel / CSV",
   documents: "Pièces jointes",
   notes: "Journal terrain",
+
+  "personal-dashboard": "Vue d’ensemble",
+  "personal-transactions": "Revenus et dépenses",
+  "personal-budgets": "Limites mensuelles",
+  "personal-savings": "Objectifs d’épargne",
 };
 
 const PAGE_ICONS = {
@@ -26,6 +35,11 @@ const PAGE_ICONS = {
   imports: UploadCloud,
   documents: FileText,
   notes: NotebookText,
+
+  "personal-dashboard": UserRound,
+  "personal-transactions": ListChecks,
+  "personal-budgets": PiggyBank,
+  "personal-savings": PiggyBank,
 };
 
 export default function Sidebar({
@@ -34,6 +48,8 @@ export default function Sidebar({
   menuItems,
   mobileOpen = false,
   onClose,
+  universe = "business",
+  onSwitchUniverse,
 }) {
   const { logout } = useAuth();
 
@@ -44,6 +60,11 @@ export default function Sidebar({
     } catch (error) {
       console.error("Erreur déconnexion :", error);
     }
+  }
+
+  function handleUniverseChange(nextUniverse) {
+    onSwitchUniverse?.(nextUniverse);
+    onClose?.();
   }
 
   return (
@@ -86,18 +107,48 @@ export default function Sidebar({
           </div>
 
           <div className="relative flex-1 overflow-y-auto px-5 pb-5 pt-5">
-            <div className="mb-6">
+            <div className="mb-5">
               <div className="hidden rounded-full border border-blue-300/30 bg-white/10 px-3 py-1 text-xs font-bold text-blue-100 lg:inline-flex">
                 Monyva
               </div>
 
               <h2 className="mt-4 text-[26px] font-black leading-tight tracking-tight text-white">
-                Pilotage simple
+                {universe === "business" ? "Pilotage simple" : "Budget personnel"}
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-300">
-                Une interface légère pour suivre, comprendre et décider sans comptabilité lourde.
+                {universe === "business"
+                  ? "Une interface légère pour suivre, comprendre et décider sans comptabilité lourde."
+                  : "Un espace clair pour suivre tes revenus, tes dépenses et ton reste à vivre."}
               </p>
+            </div>
+
+            <div className="mb-5 rounded-[24px] border border-white/10 bg-white/[0.06] p-2">
+              <button
+                type="button"
+                onClick={() => handleUniverseChange("business")}
+                className={`mb-2 flex w-full items-center gap-3 rounded-[18px] px-3 py-3 text-left text-sm font-black transition ${
+                  universe === "business"
+                    ? "bg-white text-slate-950"
+                    : "text-slate-300 hover:bg-white/10"
+                }`}
+              >
+                <BriefcaseBusiness className="h-5 w-5" />
+                Je gère mon activité
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleUniverseChange("personal")}
+                className={`flex w-full items-center gap-3 rounded-[18px] px-3 py-3 text-left text-sm font-black transition ${
+                  universe === "personal"
+                    ? "bg-white text-slate-950"
+                    : "text-slate-300 hover:bg-white/10"
+                }`}
+              >
+                <UserRound className="h-5 w-5" />
+                Je gère mon budget perso
+              </button>
             </div>
 
             <nav className="space-y-2">
@@ -150,10 +201,14 @@ export default function Sidebar({
                 Positionnement
               </p>
               <p className="mt-2 text-sm font-bold leading-6 text-white">
-                Suivi intelligent des activités, pas un ERP lourd.
+                {universe === "business"
+                  ? "Suivi intelligent des activités, pas un ERP lourd."
+                  : "Comprendre où part l’argent et reprendre le contrôle."}
               </p>
               <p className="mt-2 text-xs leading-5 text-slate-400">
-                Recettes, dépenses, résultat et conseils utiles.
+                {universe === "business"
+                  ? "Recettes, dépenses, résultat et conseils utiles."
+                  : "Revenus, dépenses, budget, épargne et reste à vivre."}
               </p>
             </div>
 

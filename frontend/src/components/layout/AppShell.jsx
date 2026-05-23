@@ -8,6 +8,8 @@ export default function AppShell({
   activePage,
   onNavigate,
   menuItems,
+  universe,
+  onSwitchUniverse,
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -28,12 +30,14 @@ export default function AppShell({
 
         <div className="relative mx-auto flex min-h-screen w-full max-w-[1580px] gap-4 px-3 py-3 sm:gap-5 sm:px-5 sm:py-4 lg:px-8">
           <Sidebar
-            activePage={activePage}
-            onNavigate={handleNavigate}
-            menuItems={menuItems}
-            mobileOpen={mobileMenuOpen}
-            onClose={() => setMobileMenuOpen(false)}
-          />
+  activePage={activePage}
+  onNavigate={handleNavigate}
+  menuItems={menuItems}
+  mobileOpen={mobileMenuOpen}
+  onClose={() => setMobileMenuOpen(false)}
+  universe={universe}
+  onSwitchUniverse={onSwitchUniverse}
+/>
 
           <div className="min-w-0 flex-1 overflow-x-hidden">
             <Topbar
@@ -48,7 +52,7 @@ export default function AppShell({
         </div>
       </div>
 
-      {!mobileMenuOpen ? <ChatBox /> : null}
+      {!mobileMenuOpen ? <ChatBox universe={universe} /> : null}
     </div>
   );
 }
