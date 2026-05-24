@@ -220,149 +220,140 @@ export default function ChatBox({ universe = "business" }) {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-x-3 bottom-4 z-50 flex h-[78vh] max-h-[680px] flex-col overflow-hidden rounded-[30px] border border-white/60 bg-white/95 shadow-[0_30px_90px_rgba(15,23,42,0.28)] backdrop-blur-2xl sm:inset-x-auto sm:right-6 sm:h-[620px] sm:w-[430px]">
-          <div className="relative overflow-hidden border-b border-white/10 bg-slate-950 p-4 text-white">
-            <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-blue-500/30 blur-3xl" />
+  <div className="fixed inset-x-3 bottom-3 z-50 flex h-[82vh] max-h-[680px] flex-col overflow-hidden rounded-[28px] border border-white/60 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.28)] sm:inset-x-auto sm:right-6 sm:h-[620px] sm:w-[430px]">
+    <div className="shrink-0 border-b border-slate-800 bg-slate-950 px-4 py-3 text-white">
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => setIsOpen(false)}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/10 text-blue-100">
+            <Bot className="h-5 w-5" />
+          </div>
 
-            <div className="relative flex items-start justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="flex min-w-0 flex-1 items-start gap-3 text-left"
-              >
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white/10 text-blue-100">
-                  <Bot className="h-6 w-6" />
-                </div>
+          <div className="min-w-0">
+            <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-blue-200">
+              Monyva Copilot
+            </p>
 
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-blue-200">
-                    Monyva Copilot
-                  </p>
+            <h2 className="truncate text-base font-black">
+              {isPersonal
+                ? "Assistant financier personnel"
+                : "Assistant de décision"}
+            </h2>
 
-                  <h2 className="mt-1 text-lg font-black">
-                    {isPersonal
-                      ? "Assistant financier personnel"
-                      : "Assistant de décision"}
-                  </h2>
+            <p className="truncate text-[11px] text-slate-300">
+              {isPersonal
+                ? "Analyse de ton budget personnel"
+                : "Analyse intelligente de ton activité"}
+            </p>
+          </div>
+        </button>
 
-                  <p className="mt-1 text-xs leading-5 text-slate-300">
-                    {isPersonal
-                      ? "Analyse intelligente de ton budget personnel."
-                      : "Analyse intelligente de ton activité."}
-                  </p>
-                </div>
-              </button>
+        <div className="flex shrink-0 gap-2">
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white hover:bg-white/15"
+          >
+            <ChevronDown className="h-5 w-5" />
+          </button>
 
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white hover:bg-white/15"
-                >
-                  <ChevronDown className="h-5 w-5" />
-                </button>
+          <button
+            type="button"
+            onClick={handleReset}
+            className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white hover:bg-white/15"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
 
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white hover:bg-white/15"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50 p-3">
+      {messages.length <= 1 && (
+        <div className="grid gap-2 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+            <Sparkles className="h-4 w-4" />
+            Questions rapides
+          </p>
+
+          {quickQuestions.map((question) => (
+            <button
+              key={question}
+              type="button"
+              onClick={() => sendQuestion(question)}
+              className="rounded-2xl bg-slate-100 px-3 py-2 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+            >
+              {question}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {messages.map((message, index) => {
+        const isUser = message.role === "user";
+
+        return (
+          <div
+            key={`${message.role}-${index}`}
+            className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-[88%] whitespace-pre-wrap rounded-[22px] px-4 py-3 text-sm leading-6 shadow-sm ${
+                isUser
+                  ? "bg-slate-950 text-white"
+                  : "border-l-4 border-blue-500 bg-white text-slate-700"
+              }`}
+            >
+              <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] opacity-60">
+                {isUser ? "Vous" : "Monyva"}
+              </p>
+
+              {message.content}
             </div>
           </div>
+        );
+      })}
 
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-slate-50/80 p-3 sm:p-4">
-            {messages.length <= 1 && (
-              <div className="grid gap-2 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm">
-                <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
-                  <Sparkles className="h-4 w-4" />
-                  Questions rapides
-                </p>
-
-                {quickQuestions.map((question) => (
-                  <button
-                    key={question}
-                    type="button"
-                    onClick={() => sendQuestion(question)}
-                    className="rounded-2xl bg-slate-100 px-3 py-2 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
-                  >
-                    {question}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {messages.map((message, index) => {
-              const isUser = message.role === "user";
-
-              return (
-                <div
-                  key={`${message.role}-${index}`}
-                  className={`flex ${
-                    isUser ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`relative max-w-[92%] whitespace-pre-wrap rounded-[24px] px-4 py-3 text-sm leading-6 shadow-sm ${
-                      isUser
-                        ? "border-r-4 border-slate-950 bg-slate-950 text-white"
-                        : "border-l-4 border-blue-500 bg-white text-slate-700"
-                    }`}
-                  >
-                    <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] opacity-60">
-                      {isUser ? "Vous" : "Monyva"}
-                    </p>
-
-                    {message.content}
-                  </div>
-                </div>
-              );
-            })}
-
-            {loading && (
-              <div className="flex justify-start">
-                <div className="rounded-[24px] border-l-4 border-blue-500 bg-white px-4 py-3 text-sm font-medium text-slate-500 shadow-sm">
-                  {isPersonal
-                    ? "Monyva analyse votre budget..."
-                    : "Monyva analyse votre activité..."}
-                </div>
-              </div>
-            )}
-
-            <div ref={bottomRef} />
-          </div>
-
-          <div className="shrink-0 border-t border-slate-100 bg-white p-3">
-            <form
-              onSubmit={handleSend}
-              className="flex gap-2"
-            >
-              <input
-                value={input}
-                onChange={(event) =>
-                  setInput(event.target.value)
-                }
-                placeholder={
-                  isPersonal
-                    ? "Ex : Est-ce que je dépense trop en bouffe ?"
-                    : "Ex : Que dois-je améliorer ?"
-                }
-                className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
-              />
-
-              <button
-                type="submit"
-                disabled={loading || !input.trim()}
-                className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-slate-950 text-white shadow-sm transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Send className="h-5 w-5" />
-              </button>
-            </form>
+      {loading && (
+        <div className="flex justify-start">
+          <div className="rounded-[22px] border-l-4 border-blue-500 bg-white px-4 py-3 text-sm font-medium text-slate-500 shadow-sm">
+            {isPersonal
+              ? "Monyva analyse votre budget..."
+              : "Monyva analyse votre activité..."}
           </div>
         </div>
       )}
+
+      <div ref={bottomRef} />
+    </div>
+
+    <div className="shrink-0 border-t border-slate-100 bg-white p-3">
+      <form onSubmit={handleSend} className="flex gap-2">
+        <input
+          value={input}
+          onChange={(event) => setInput(event.target.value)}
+          placeholder={
+            isPersonal
+              ? "Ex : Est-ce que je dépense trop ?"
+              : "Ex : Que dois-je améliorer ?"
+          }
+          className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
+        />
+
+        <button
+          type="submit"
+          disabled={loading || !input.trim()}
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-slate-950 text-white shadow-sm transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Send className="h-5 w-5" />
+        </button>
+      </form>
+    </div>
+  </div>
+)}
 
       {!isOpen && (
         <button
