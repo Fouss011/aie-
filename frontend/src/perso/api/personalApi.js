@@ -1,9 +1,15 @@
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:4000";
 
-export async function getPersonalDashboard(userId) {
+export async function getPersonalDashboard(userId, month) {
+  const params = new URLSearchParams({ userId });
+
+  if (month) {
+    params.set("month", month);
+  }
+
   const response = await fetch(
-    `${API_URL}/api/personal/dashboard?userId=${userId}`
+    `${API_URL}/api/personal/dashboard?${params.toString()}`
   );
 
   if (!response.ok) {
@@ -26,16 +32,13 @@ export async function getPersonalTransactions(userId) {
 }
 
 export async function createPersonalTransaction(payload) {
-  const response = await fetch(
-    `${API_URL}/api/personal/transactions`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    }
-  );
+  const response = await fetch(`${API_URL}/api/personal/transactions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
 
   if (!response.ok) {
     throw new Error("Erreur création transaction");
@@ -45,12 +48,9 @@ export async function createPersonalTransaction(payload) {
 }
 
 export async function deletePersonalTransaction(id) {
-  const response = await fetch(
-    `${API_URL}/api/personal/transactions/${id}`,
-    {
-      method: "DELETE",
-    }
-  );
+  const response = await fetch(`${API_URL}/api/personal/transactions/${id}`, {
+    method: "DELETE",
+  });
 
   if (!response.ok) {
     throw new Error("Erreur suppression");

@@ -12,6 +12,7 @@ import {
 import {
   createPersonalTransaction,
   getPersonalDashboard,
+  getPersonalBudgets,
 } from "../api/personalApi";
 
 const EXPENSE_CATEGORIES = [
@@ -43,13 +44,54 @@ function formatMoney(value) {
   }).format(Number(value || 0));
 }
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+function localDateISO(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
-export default function PersonalDashboardPage() {
+function todayISO() {
+  return localDateISO(new Date());
+}
+
+function normalizeDate(value) {
+  if (!value) return "";
+
+  return String(value).slice(0, 10);
+}
+
+function currentMonthISO() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}`;
+}
+
+function getWeekRangeISO() {
+  const now = new Date();
+  const day = now.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  return {
+    start: localDateISO(monday),
+    end: localDateISO(sunday),
+  };
+}
+
+export default function PersonalDashboardPage({ focusForm = false }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [budgets, setBudgets] = useState([]);
+  const [todayKey, setTodayKey] = useState(todayISO());
 
   const [data, setData] = useState({
     income: 0,
@@ -72,7 +114,30 @@ export default function PersonalDashboardPage() {
 
   useEffect(() => {
     loadDashboard();
-  }, []);
+  }, [userId, todayKey]);
+
+  useEffect(() => {
+    if (!userId) return undefined;
+
+    const now = new Date();
+    const nextMidnight = new Date(now);
+
+    nextMidnight.setHours(24, 0, 2, 0);
+
+    const timeoutId = window.setTimeout(() => {
+      setTodayKey(todayISO());
+
+      setForm((current) => ({
+        ...current,
+        transaction_date:
+          current.transaction_date === todayKey
+            ? todayISO()
+            : current.transaction_date,
+      }));
+    }, Math.max(1000, nextMidnight.getTime() - now.getTime()));
+
+    return () => window.clearTimeout(timeoutId);
+  }, [userId, todayKey]);
 
   const fixedExpenses = useMemo(() => {
     return data.transactions
@@ -82,17 +147,78 @@ export default function PersonalDashboardPage() {
       .reduce((sum, t) => sum + Number(t.amount || 0), 0);
   }, [data.transactions]);
 
+  const budgetAlerts = useMemo(() => {
+    const today = todayKey;
+    const currentMonth = currentMonthISO();
+    const week = getWeekRangeISO();
+
+    return budgets
+      .map((budget) => {
+        const spent = data.transactions
+          .filter((item) => {
+            if (item.type !== "expense") return false;
+            if (item.category !== budget.category) return false;
+
+            const period = String(budget.period || "monthly")
+              .toLowerCase()
+              .trim();
+
+            const itemDate = normalizeDate(item.transaction_date);
+
+            if (period === "daily" || period === "jour" || period === "day") {
+              return itemDate === today;
+            }
+
+            if (
+              period === "weekly" ||
+              period === "semaine" ||
+              period === "week"
+            ) {
+              return itemDate >= week.start && itemDate <= week.end;
+            }
+
+            return itemDate.startsWith(currentMonth);
+          })
+          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+        const planned = Number(budget.planned_amount || 0);
+        const percent = planned > 0 ? (spent / planned) * 100 : 0;
+        const threshold = Number(budget.alert_threshold || 80);
+
+        return {
+          ...budget,
+          spent,
+          planned,
+          percent,
+          isAlert: percent >= threshold,
+        };
+      })
+      .filter((budget) => budget.isAlert);
+  }, [budgets, data.transactions, todayKey]);
+
   async function loadDashboard() {
     try {
       setLoading(true);
 
       if (!userId) {
-        console.warn("Aucun userId trouvé dans localStorage");
+        console.warn("Aucun userId trouvé");
         return;
       }
 
-      const result = await getPersonalDashboard(userId);
-      setData(result);
+      const currentMonth = currentMonthISO();
+
+      const result = await getPersonalDashboard(userId, currentMonth);
+
+      const budgetData = await getPersonalBudgets(userId, currentMonth);
+
+      setData({
+        income: result?.income || 0,
+        expenses: result?.expenses || 0,
+        balance: result?.balance || 0,
+        transactions: result?.transactions || [],
+      });
+
+      setBudgets(budgetData || []);
     } catch (error) {
       console.error(error);
     } finally {
@@ -106,8 +232,7 @@ export default function PersonalDashboardPage() {
       [name]: value,
       ...(name === "type"
         ? {
-            category:
-              value === "income" ? "Salaire" : "Maison",
+            category: value === "income" ? "Salaire" : "Maison",
           }
         : {}),
     }));
@@ -135,16 +260,20 @@ export default function PersonalDashboardPage() {
         label: form.label.trim(),
         amount: Number(form.amount),
         category: form.category,
-        transaction_date: form.transaction_date,
+        transaction_date: form.transaction_date || todayISO(),
         note: form.note?.trim() || null,
       });
+
+      const freshToday = todayISO();
+
+      setTodayKey(freshToday);
 
       setForm({
         type: "expense",
         label: "",
         amount: "",
         category: "Maison",
-        transaction_date: todayISO(),
+        transaction_date: freshToday,
         note: "",
       });
 
@@ -176,6 +305,100 @@ export default function PersonalDashboardPage() {
           pour reprendre le contrôle de ton argent au quotidien.
         </p>
       </div>
+
+      {budgetAlerts.length > 0 && (
+  <div className="mb-6 rounded-[28px] border border-rose-200 bg-rose-50/40 p-4 shadow-sm">
+    <div className="mb-3 flex flex-wrap items-center gap-3">
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-rose-600">
+        Alerte budget
+      </p>
+
+      <p className="text-sm font-bold text-slate-700">
+        {budgetAlerts.length} limite(s) ont atteint ou dépassé le seuil d’alerte.
+      </p>
+    </div>
+
+    <div className="space-y-3">
+      {budgetAlerts.map((budget) => {
+        const exceeded = Math.max(0, budget.spent - budget.planned);
+        const percent = Math.round(budget.percent);
+        const period = String(budget.period || "monthly").toLowerCase();
+
+        const periodLabel =
+          period === "daily" || period === "jour" || period === "day"
+            ? "Jour"
+            : period === "weekly" || period === "semaine" || period === "week"
+            ? "Semaine"
+            : "Mois";
+
+        return (
+          <div
+            key={budget.id}
+            className="rounded-[24px] border border-rose-100 bg-white p-4 shadow-sm"
+          >
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex min-w-[180px] items-center gap-3">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-rose-100">
+                  <span className="h-3 w-3 rounded-full bg-rose-600" />
+                </div>
+
+                <div>
+                  <p className="text-base font-black text-slate-950">
+                    {budget.category}
+                  </p>
+
+                  <p className="text-[11px] font-black uppercase tracking-wide text-rose-600">
+                    {periodLabel}
+                  </p>
+                </div>
+              </div>
+
+              <div className="min-w-[220px]">
+                <p className="text-sm font-black text-slate-900">
+                  {formatMoney(budget.spent)} € dépensés /{" "}
+                  {formatMoney(budget.planned)} € prévus
+                </p>
+
+                {exceeded > 0 && (
+                  <p className="mt-1 text-sm font-black text-rose-600">
+                    {formatMoney(exceeded)} € dépassés
+                  </p>
+                )}
+              </div>
+
+              <div className="min-w-[260px] flex-1">
+                <div className="mb-1 flex items-center justify-between gap-3">
+                  <p className="text-xs font-black text-rose-600">
+                    {percent} % utilisé
+                  </p>
+
+                  <p className="text-xs font-bold text-slate-500">
+                    Alerte à {budget.alert_threshold || 80} %
+                  </p>
+                </div>
+
+                <div className="h-2.5 overflow-hidden rounded-full bg-rose-100">
+                  <div
+                    className="h-full rounded-full bg-rose-600"
+                    style={{
+                      width: `${Math.min(100, percent)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="ml-auto rounded-2xl bg-rose-100 px-4 py-2 text-center">
+                <p className="text-base md:text-lg font-black text-rose-600">
+                  {percent} %
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
 
       <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-[28px] border border-emerald-100 bg-emerald-50 p-5">
@@ -222,16 +445,22 @@ export default function PersonalDashboardPage() {
       <div className="mt-6 grid gap-6 xl:grid-cols-[420px_1fr]">
         <form
           onSubmit={handleSubmit}
-          className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm"
+          className={`rounded-[32px] border bg-white p-6 shadow-sm ${
+            focusForm
+              ? "border-blue-400 ring-4 ring-blue-100"
+              : "border-slate-200"
+          }`}
         >
           <div className="mb-5 flex items-center gap-3">
             <div className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-950 text-white">
               <Plus className="h-5 w-5" />
             </div>
+
             <div>
               <h2 className="text-xl font-black text-slate-950">
                 Ajouter une opération
               </h2>
+
               <p className="text-sm text-slate-500">
                 Revenu, dépense ou entrée ponctuelle.
               </p>
@@ -266,6 +495,7 @@ export default function PersonalDashboardPage() {
 
           <label className="mt-5 block">
             <span className="text-sm font-bold text-slate-700">Libellé</span>
+
             <input
               value={form.label}
               onChange={(e) => updateField("label", e.target.value)}
@@ -280,6 +510,7 @@ export default function PersonalDashboardPage() {
 
           <label className="mt-4 block">
             <span className="text-sm font-bold text-slate-700">Montant</span>
+
             <input
               value={form.amount}
               onChange={(e) => updateField("amount", e.target.value)}
@@ -293,6 +524,7 @@ export default function PersonalDashboardPage() {
 
           <label className="mt-4 block">
             <span className="text-sm font-bold text-slate-700">Catégorie</span>
+
             <select
               value={form.category}
               onChange={(e) => updateField("category", e.target.value)}
@@ -306,8 +538,10 @@ export default function PersonalDashboardPage() {
 
           <label className="mt-4 block">
             <span className="text-sm font-bold text-slate-700">Date</span>
+
             <div className="relative mt-2">
               <CalendarDays className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
               <input
                 value={form.transaction_date}
                 onChange={(e) =>
@@ -323,6 +557,7 @@ export default function PersonalDashboardPage() {
             <span className="text-sm font-bold text-slate-700">
               Note optionnelle
             </span>
+
             <textarea
               value={form.note}
               onChange={(e) => updateField("note", e.target.value)}
@@ -362,6 +597,7 @@ export default function PersonalDashboardPage() {
                 <p className="font-black text-slate-950">
                   Aucune transaction pour l’instant.
                 </p>
+
                 <p className="mt-2 text-sm text-slate-500">
                   Ajoute ton salaire, tes courses, ton loyer ou tes dépenses du
                   quotidien.
@@ -379,8 +615,9 @@ export default function PersonalDashboardPage() {
                     <p className="truncate font-black text-slate-950">
                       {item.label}
                     </p>
+
                     <p className="mt-1 text-xs font-bold text-slate-500">
-                      {item.category} · {item.transaction_date}
+                      {item.category} · {normalizeDate(item.transaction_date)}
                     </p>
                   </div>
 

@@ -44,6 +44,7 @@ export default function MainApp() {
   const PERSONAL_MENU_ITEMS = useMemo(
     () => [
       { key: "personal-dashboard", label: "Vue perso" },
+      { key: "personal-add-operation", label: "Ajouter opération" },
       { key: "personal-transactions", label: "Transactions" },
       { key: "personal-budgets", label: "Budgets" },
       { key: "personal-recurring", label: "Charges fixes" },
@@ -77,6 +78,9 @@ localStorage.setItem("monyva_active_page", nextPage);
     switch (activePage) {
       case "personal-dashboard":
         return <PersonalDashboardPage />;
+
+      case "personal-add-operation":
+        return <PersonalDashboardPage focusForm />;
 
       case "personal-transactions":
         return <PersonalTransactionsPage />;

@@ -18,7 +18,7 @@ import {
 
 export async function dashboard(req, res) {
   try {
-    const userId = req.query.userId;
+    const { userId, month } = req.query;
 
     if (!userId) {
       return res.status(400).json({
@@ -26,7 +26,7 @@ export async function dashboard(req, res) {
       });
     }
 
-    const data = await getPersonalDashboard(userId);
+    const data = await getPersonalDashboard(userId, month);
 
     res.json(data);
   } catch (error) {
@@ -269,10 +269,7 @@ export async function updateSavingsGoal(req, res) {
   try {
     const { id } = req.params;
 
-    const goal = await updatePersonalSavingsGoal(
-      id,
-      req.body
-    );
+    const goal = await updatePersonalSavingsGoal(id, req.body);
 
     res.json(goal);
   } catch (error) {
@@ -312,48 +309,37 @@ export async function personalCopilot(req, res) {
       });
     }
 
-    const context =
-      await getPersonalCopilotContext(userId);
+    const context = await getPersonalCopilotContext(userId);
 
     const lowerMessage = message.toLowerCase();
     const greetings = ["bonjour", "salut", "hello", "bonsoir", "coucou"];
-const thanks = ["merci", "thanks", "ok merci", "c'est bon", "super merci"];
+    const thanks = ["merci", "thanks", "ok merci", "c'est bon", "super merci"];
 
-if (greetings.some((word) => lowerMessage.includes(word))) {
-  return res.json({
-    response:
-      "Bonjour 👋 Je suis ton copilote financier personnel. Je peux t’aider à analyser ton reste à vivre, tes dépenses, tes budgets, tes charges fixes et ton épargne.",
-  });
-}
+    if (greetings.some((word) => lowerMessage.includes(word))) {
+      return res.json({
+        response:
+          "Bonjour 👋 Je suis ton copilote financier personnel. Je peux t’aider à analyser ton reste à vivre, tes dépenses, tes budgets, tes charges fixes et ton épargne.",
+      });
+    }
 
-if (thanks.some((word) => lowerMessage.includes(word))) {
-  return res.json({
-    response:
-      "Avec plaisir 👌 Je reste là pour t’aider à garder le contrôle sur ton budget personnel.",
-  });
-}
+    if (thanks.some((word) => lowerMessage.includes(word))) {
+      return res.json({
+        response:
+          "Avec plaisir 👌 Je reste là pour t’aider à garder le contrôle sur ton budget personnel.",
+      });
+    }
 
     let response =
       "Je n’ai pas encore assez d’informations pour répondre.";
 
-    const balance = Number(
-      context.dashboard?.balance || 0
-    );
+    const balance = Number(context.dashboard?.balance || 0);
+    const expenses = Number(context.dashboard?.expenses || 0);
+    const income = Number(context.dashboard?.income || 0);
 
-    const expenses = Number(
-      context.dashboard?.expenses || 0
+    const recurringTotal = context.recurringExpenses.reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0
     );
-
-    const income = Number(
-      context.dashboard?.income || 0
-    );
-
-    const recurringTotal =
-      context.recurringExpenses.reduce(
-        (sum, item) =>
-          sum + Number(item.amount || 0),
-        0
-      );
 
     if (
       lowerMessage.includes("reste") ||
@@ -366,33 +352,22 @@ if (thanks.some((word) => lowerMessage.includes(word))) {
       )} €, ton reste réel devient environ ${(balance - recurringTotal).toFixed(
         0
       )} €.`;
-    }
-
-    else if (
+    } else if (
       lowerMessage.includes("bouffe") ||
       lowerMessage.includes("manger")
     ) {
       const foodExpenses = context.transactions
-        .filter(
-          (item) => item.category === "Bouffe"
-        )
-        .reduce(
-          (sum, item) =>
-            sum + Number(item.amount || 0),
-          0
-        );
+        .filter((item) => item.category === "Bouffe")
+        .reduce((sum, item) => sum + Number(item.amount || 0), 0);
 
       response = `Tu as dépensé environ ${foodExpenses.toFixed(
         0
       )} € dans la catégorie Bouffe récemment. Vérifie si cela reste cohérent avec ton budget quotidien.`;
-    }
-
-    else if (
+    } else if (
       lowerMessage.includes("économiser") ||
       lowerMessage.includes("epargner")
     ) {
-      const possibleSavings =
-        balance - recurringTotal;
+      const possibleSavings = balance - recurringTotal;
 
       if (possibleSavings > 0) {
         response = `Tu pourrais potentiellement mettre de côté environ ${possibleSavings.toFixed(
@@ -402,9 +377,7 @@ if (thanks.some((word) => lowerMessage.includes(word))) {
         response =
           "Tes charges fixes et dépenses actuelles semblent déjà absorber la majorité de tes revenus.";
       }
-    }
-
-    else if (
+    } else if (
       lowerMessage.includes("dépense") ||
       lowerMessage.includes("depense")
     ) {
@@ -414,21 +387,15 @@ if (thanks.some((word) => lowerMessage.includes(word))) {
         if (item.type !== "expense") return;
 
         grouped[item.category] =
-          (grouped[item.category] || 0) +
-          Number(item.amount || 0);
+          (grouped[item.category] || 0) + Number(item.amount || 0);
       });
 
-      const sorted = Object.entries(grouped).sort(
-        (a, b) => b[1] - a[1]
-      );
+      const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
 
       if (sorted.length > 0) {
         response = `Tes plus grosses dépenses actuelles sont : ${sorted
           .slice(0, 3)
-          .map(
-            ([category, amount]) =>
-              `${category} (${amount.toFixed(0)} €)`
-          )
+          .map(([category, amount]) => `${category} (${amount.toFixed(0)} €)`)
           .join(", ")}.`;
       }
     }

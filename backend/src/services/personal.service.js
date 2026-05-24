@@ -1,18 +1,24 @@
 import { supabase } from "../config/supabaseClient.js";
 
-export async function getPersonalDashboard(userId) {
-  const now = new Date();
+function getSafeMonth(month) {
+  if (/^\d{4}-\d{2}$/.test(String(month || ""))) {
+    return String(month);
+  }
 
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
+  return new Date().toISOString().slice(0, 7);
+}
 
-  const startDate = `${year}-${month}-01`;
+export async function getPersonalDashboard(userId, month) {
+  const safeMonth = getSafeMonth(month);
+  const startDate = `${safeMonth}-01`;
 
   const { data, error } = await supabase
     .from("personal_transactions")
     .select("*")
     .eq("user_id", userId)
-    .gte("transaction_date", startDate);
+    .gte("transaction_date", startDate)
+    .order("transaction_date", { ascending: false })
+    .order("created_at", { ascending: false });
 
   if (error) {
     throw error;
@@ -55,7 +61,8 @@ export async function getPersonalTransactions(userId) {
     .from("personal_transactions")
     .select("*")
     .eq("user_id", userId)
-    .order("transaction_date", { ascending: false });
+    .order("transaction_date", { ascending: false })
+    .order("created_at", { ascending: false });
 
   if (error) {
     throw error;
@@ -198,7 +205,9 @@ export async function deletePersonalSavingsGoal(id) {
   return true;
 }
 
-export async function getPersonalCopilotContext(userId) {
+export async function getPersonalCopilotContext(userId, month) {
+  const safeMonth = getSafeMonth(month);
+
   const [
     dashboard,
     transactions,
@@ -206,12 +215,9 @@ export async function getPersonalCopilotContext(userId) {
     recurringExpenses,
     savings,
   ] = await Promise.all([
-    getPersonalDashboard(userId),
+    getPersonalDashboard(userId, safeMonth),
     getPersonalTransactions(userId),
-    getPersonalBudgets(
-      userId,
-      new Date().toISOString().slice(0, 7)
-    ),
+    getPersonalBudgets(userId, safeMonth),
     getPersonalRecurringExpenses(userId),
     getPersonalSavingsGoals(userId),
   ]);
