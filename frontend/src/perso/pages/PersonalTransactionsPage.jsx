@@ -176,51 +176,55 @@ export default function PersonalTransactionsPage() {
 
               return (
                 <div
-                  key={item.id}
-                  className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 rounded-3xl border border-slate-100 bg-slate-50 p-3 sm:grid-cols-[48px_minmax(0,1fr)_auto_auto] sm:p-4"
-                >
-                  <div
-                    className={`grid h-11 w-11 place-items-center rounded-2xl sm:h-12 sm:w-12 ${
-                      isIncome
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-rose-100 text-rose-700"
-                    }`}
-                  >
-                    {isIncome ? (
-                      <ArrowUpRight className="h-5 w-5" />
-                    ) : (
-                      <ArrowDownLeft className="h-5 w-5" />
-                    )}
-                  </div>
+  key={item.id}
+  className="rounded-3xl border border-slate-100 bg-slate-50 p-4"
+>
+  <div className="flex items-start gap-3">
+    <div
+      className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${
+        isIncome
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-rose-100 text-rose-700"
+      }`}
+    >
+      {isIncome ? (
+        <ArrowUpRight className="h-5 w-5" />
+      ) : (
+        <ArrowDownLeft className="h-5 w-5" />
+      )}
+    </div>
 
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-black text-slate-950 sm:text-base">
-                      {item.label}
-                    </p>
+    <div className="min-w-0 flex-1">
+      <p className="text-base font-black leading-snug text-slate-950">
+        {item.label}
+      </p>
 
-                    <p className="mt-1 truncate text-xs font-bold text-slate-500">
-                      {item.category} · {normalizeDate(item.transaction_date)}
-                    </p>
-                  </div>
+      <p className="mt-1 text-xs font-bold leading-snug text-slate-500">
+        {item.category} · {normalizeDate(item.transaction_date)}
+      </p>
+    </div>
+  </div>
 
-                  <div
-                    className={`shrink-0 whitespace-nowrap rounded-2xl px-3 py-2 text-right text-sm font-black sm:min-w-[110px] ${
-                      isIncome
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-rose-100 text-rose-700"
-                    }`}
-                  >
-                    {isIncome ? "+" : "-"}
-                    {formatMoney(item.amount)} €
-                  </div>
+  <div className="mt-4 flex items-center justify-between gap-3">
+    <div
+      className={`rounded-2xl px-4 py-2 text-sm font-black ${
+        isIncome
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-rose-100 text-rose-700"
+      }`}
+    >
+      {isIncome ? "+" : "-"}
+      {formatMoney(item.amount)} €
+    </div>
 
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="col-start-3 grid h-10 w-10 place-items-center rounded-2xl bg-white text-slate-500 transition hover:bg-rose-100 hover:text-rose-600 sm:col-start-auto sm:h-11 sm:w-11"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+    <button
+      onClick={() => handleDelete(item.id)}
+      className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-slate-500 transition hover:bg-rose-100 hover:text-rose-600"
+    >
+      <Trash2 className="h-4 w-4" />
+    </button>
+  </div>
+</div>
               );
             })}
         </div>
