@@ -14,14 +14,20 @@ import {
 
 function formatMoney(value) {
   return new Intl.NumberFormat("fr-FR", {
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(Number(value || 0));
+}
+
+function normalizeDate(value) {
+  if (!value) return "";
+
+  return String(value).slice(0, 10);
 }
 
 export default function PersonalTransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
-
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
@@ -29,8 +35,10 @@ export default function PersonalTransactionsPage() {
   const userId = user?.id;
 
   useEffect(() => {
-    loadTransactions();
-  }, []);
+    if (userId) {
+      loadTransactions();
+    }
+  }, [userId]);
 
   async function loadTransactions() {
     try {
@@ -38,7 +46,7 @@ export default function PersonalTransactionsPage() {
 
       const data = await getPersonalTransactions(userId);
 
-      setTransactions(data);
+      setTransactions(data || []);
     } catch (error) {
       console.error(error);
     } finally {
@@ -47,35 +55,32 @@ export default function PersonalTransactionsPage() {
   }
 
   async function handleDelete(id) {
-  const confirmed = window.confirm(
-    "Supprimer cette transaction ?"
-  );
+    const confirmed = window.confirm("Supprimer cette transaction ?");
 
-  if (!confirmed) {
-    return;
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deletePersonalTransaction(id);
+
+      setTransactions((current) =>
+        current.filter((item) => item.id !== id)
+      );
+    } catch (error) {
+      console.error(error);
+      alert("Erreur suppression");
+    }
   }
-
-  try {
-    await deletePersonalTransaction(id);
-
-    setTransactions((current) =>
-      current.filter((item) => item.id !== id)
-    );
-  } catch (error) {
-    console.error(error);
-    alert("Erreur suppression");
-  }
-}
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((item) => {
+      const query = search.toLowerCase().trim();
+
       const matchesSearch =
-        item.label
-          ?.toLowerCase()
-          .includes(search.toLowerCase()) ||
-        item.category
-          ?.toLowerCase()
-          .includes(search.toLowerCase());
+        !query ||
+        item.label?.toLowerCase().includes(query) ||
+        item.category?.toLowerCase().includes(query);
 
       const matchesFilter =
         filter === "all" ? true : item.type === filter;
@@ -102,7 +107,7 @@ export default function PersonalTransactionsPage() {
             </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilter("all")}
               className={`rounded-2xl px-4 py-3 text-sm font-black ${
@@ -151,64 +156,73 @@ export default function PersonalTransactionsPage() {
 
         <div className="mt-6 space-y-3">
           {loading && (
-            <p className="text-sm text-slate-500">
-              Chargement...
-            </p>
+            <p className="text-sm text-slate-500">Chargement...</p>
+          )}
+
+          {!loading && filteredTransactions.length === 0 && (
+            <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+              <p className="font-black text-slate-950">
+                Aucune transaction trouvée.
+              </p>
+              <p className="mt-2 text-sm text-slate-500">
+                Essaie un autre filtre ou une autre recherche.
+              </p>
+            </div>
           )}
 
           {!loading &&
-            filteredTransactions.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-4 rounded-3xl border border-slate-100 bg-slate-50 p-4"
-              >
-                <div className="flex items-center gap-4">
+            filteredTransactions.map((item) => {
+              const isIncome = item.type === "income";
+
+              return (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 rounded-3xl border border-slate-100 bg-slate-50 p-3 sm:grid-cols-[48px_minmax(0,1fr)_auto_auto] sm:p-4"
+                >
                   <div
-                    className={`grid h-12 w-12 place-items-center rounded-2xl ${
-                      item.type === "income"
+                    className={`grid h-11 w-11 place-items-center rounded-2xl sm:h-12 sm:w-12 ${
+                      isIncome
                         ? "bg-emerald-100 text-emerald-700"
                         : "bg-rose-100 text-rose-700"
                     }`}
                   >
-                    {item.type === "income" ? (
+                    {isIncome ? (
                       <ArrowUpRight className="h-5 w-5" />
                     ) : (
                       <ArrowDownLeft className="h-5 w-5" />
                     )}
                   </div>
 
-                  <div>
-                    <p className="font-black text-slate-950">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-black text-slate-950 sm:text-base">
                       {item.label}
                     </p>
 
-                    <p className="mt-1 text-xs font-bold text-slate-500">
-                      {item.category} · {item.transaction_date}
+                    <p className="mt-1 truncate text-xs font-bold text-slate-500">
+                      {item.category} · {normalizeDate(item.transaction_date)}
                     </p>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-3">
                   <div
-                    className={`rounded-2xl px-3 py-2 text-sm font-black ${
-                      item.type === "income"
+                    className={`shrink-0 whitespace-nowrap rounded-2xl px-3 py-2 text-right text-sm font-black sm:min-w-[110px] ${
+                      isIncome
                         ? "bg-emerald-100 text-emerald-700"
                         : "bg-rose-100 text-rose-700"
                     }`}
                   >
-                    {item.type === "income" ? "+" : "-"}
+                    {isIncome ? "+" : "-"}
                     {formatMoney(item.amount)} €
                   </div>
 
                   <button
-  onClick={() => handleDelete(item.id)}
-  className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-slate-500 transition hover:bg-rose-100 hover:text-rose-600"
->
+                    onClick={() => handleDelete(item.id)}
+                    className="col-start-3 grid h-10 w-10 place-items-center rounded-2xl bg-white text-slate-500 transition hover:bg-rose-100 hover:text-rose-600 sm:col-start-auto sm:h-11 sm:w-11"
+                  >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
         </div>
       </div>
     </div>
