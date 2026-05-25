@@ -315,6 +315,26 @@ export async function personalCopilot(req, res) {
 
     const greetings = ["bonjour", "salut", "hello", "bonsoir", "coucou"];
     const thanks = ["merci", "thanks", "ok merci", "c'est bon", "super merci"];
+    const positiveReactions = [
+      "ok",
+      "top",
+      "super",
+      "cool",
+      "d'accord",
+      "parfait",
+      "bien vu",
+      "c'est bien",
+      "nickel",
+    ];
+    const nextActionWords = [
+      "que faire",
+      "quoi faire",
+      "maintenant",
+      "prochaine étape",
+      "conseil",
+      "recommande",
+      "améliorer",
+    ];
 
     const balance = Number(context.dashboard?.balance || 0);
     const expenses = Number(context.dashboard?.expenses || 0);
@@ -346,6 +366,53 @@ export async function personalCopilot(req, res) {
       (a, b) => b[1] - a[1]
     );
 
+    const topCategory = sortedExpenses[0]?.[0] || null;
+    const topAmount = Number(sortedExpenses[0]?.[1] || 0);
+
+    const foodExpenses = expenseTransactions
+      .filter((item) => item.category === "Bouffe")
+      .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+    const foodBudget = budgets.find((budget) => budget.category === "Bouffe");
+    const foodPlanned = Number(foodBudget?.planned_amount || 0);
+    const foodPercent =
+      foodPlanned > 0 ? (foodExpenses / foodPlanned) * 100 : 0;
+
+    function globalSummary() {
+      const topThree = sortedExpenses
+        .slice(0, 3)
+        .map(([category, amount]) => `${category} (${Number(amount).toFixed(0)} €)`)
+        .join(", ");
+
+      return `Globalement, tu as ${income.toFixed(
+        0
+      )} € de revenus enregistrés et ${expenses.toFixed(
+        0
+      )} € de dépenses. Ton reste affiché est d’environ ${balance.toFixed(
+        0
+      )} €. ${
+        recurringTotal > 0
+          ? `Après tes charges fixes estimées à ${recurringTotal.toFixed(
+              0
+            )} €, ton reste réel tourne autour de ${realBalance.toFixed(0)} €.`
+          : "Je ne vois pas encore de charges fixes séparées enregistrées, donc je me base sur les opérations du mois."
+      } ${
+        topThree
+          ? `Tes postes les plus lourds sont : ${topThree}.`
+          : "Il me faut encore plus de dépenses catégorisées pour mieux repérer les postes lourds."
+      }`;
+    }
+
+    function actionAdvice() {
+      if (topCategory) {
+        return `Mon action prioritaire : surveille d’abord ${topCategory}, car c’est ton plus gros poste avec environ ${topAmount.toFixed(
+          0
+        )} €. Ensuite, fixe une limite claire sur les petites dépenses répétées.`;
+      }
+
+      return "Mon action prioritaire : ajoute quelques dépenses avec des catégories précises, puis fixe une limite sur les dépenses variables comme Bouffe, Transport ou Loisirs.";
+    }
+
     if (greetings.some((word) => lowerMessage.includes(word))) {
       return res.json({
         response:
@@ -356,100 +423,80 @@ export async function personalCopilot(req, res) {
     if (thanks.some((word) => lowerMessage.includes(word))) {
       return res.json({
         response:
-          "Avec plaisir 👌 Je reste là pour t’aider à garder le contrôle sur ton budget personnel.",
+          "Avec plaisir 👌 Garde surtout un œil sur ton reste à vivre et sur les petites dépenses répétées. C’est souvent là que le budget se joue.",
       });
     }
 
     let response = "";
 
     if (
+      positiveReactions.some((word) => lowerMessage === word) ||
+      positiveReactions.some((word) => lowerMessage.includes(word))
+    ) {
+      response = `${actionAdvice()} Si tu veux, la prochaine étape logique est de regarder tes dépenses par catégorie pour voir où tu peux gagner un peu de marge.`;
+    } else if (
+      nextActionWords.some((word) => lowerMessage.includes(word))
+    ) {
+      response = `${globalSummary()} ${actionAdvice()}`;
+    } else if (
       lowerMessage.includes("reste") ||
       lowerMessage.includes("reste à vivre") ||
       lowerMessage.includes("combien il me reste")
     ) {
       response = `Il te reste actuellement environ ${balance.toFixed(
         0
-      )} € après tes dépenses enregistrées. En tenant compte de tes charges fixes estimées à ${recurringTotal.toFixed(
-        0
-      )} €, ton reste réel est autour de ${realBalance.toFixed(
-        0
-      )} €.`;
+      )} € après tes dépenses enregistrées. ${
+        recurringTotal > 0
+          ? `En tenant compte de tes charges fixes estimées à ${recurringTotal.toFixed(
+              0
+            )} €, ton reste réel est autour de ${realBalance.toFixed(0)} €.`
+          : "Comme tes charges fixes ne sont pas isolées dans le module charges fixes, je me base sur ton reste affiché."
+      }`;
     } else if (
       lowerMessage.includes("bouffe") ||
       lowerMessage.includes("manger") ||
       lowerMessage.includes("repas")
     ) {
-      const foodExpenses = expenseTransactions
-        .filter((item) => item.category === "Bouffe")
-        .reduce((sum, item) => sum + Number(item.amount || 0), 0);
-
-      const foodBudget = budgets.find((budget) => budget.category === "Bouffe");
-      const planned = Number(foodBudget?.planned_amount || 0);
-
-      if (planned > 0) {
-        const percent = (foodExpenses / planned) * 100;
-
+      if (foodPlanned > 0) {
         response = `Tu as dépensé environ ${foodExpenses.toFixed(
           0
-        )} € en Bouffe. Ton budget prévu est de ${planned.toFixed(
+        )} € en Bouffe. Ta limite prévue est de ${foodPlanned.toFixed(
           0
-        )} €, donc tu es à environ ${percent.toFixed(
-          0
-        )} %. ${
-          percent >= 100
+        )} €, donc tu es à environ ${foodPercent.toFixed(0)} %. ${
+          foodPercent >= 100
             ? "Oui, là tu as dépassé la limite : il faut ralentir sur cette catégorie aujourd’hui."
-            : percent >= 80
+            : foodPercent >= 80
             ? "Tu t’approches de la limite, donc prudence sur les prochaines dépenses."
             : "Pour l’instant ça reste correct, mais continue à surveiller."
         }`;
       } else {
         response = `Tu as dépensé environ ${foodExpenses.toFixed(
           0
-        )} € en Bouffe récemment. Je te conseille de définir une limite pour cette catégorie afin que je puisse mieux juger si c’est trop ou pas.`;
+        )} € en Bouffe récemment. Pour mieux juger si c’est trop, définis une limite Bouffe par jour ou par semaine.`;
       }
     } else if (
+      lowerMessage.includes("trop") ||
       lowerMessage.includes("tu trouves") ||
-      lowerMessage.includes("c'est trop") ||
-      lowerMessage.includes("est-ce trop") ||
-      lowerMessage.includes("trop dépens")
+      lowerMessage.includes("abus") ||
+      lowerMessage.includes("raisonnable")
     ) {
-      if (sortedExpenses.length > 0) {
-        const [topCategory, topAmount] = sortedExpenses[0];
-
-        response = `À première vue, ta dépense la plus lourde est ${topCategory} avec environ ${topAmount.toFixed(
+      if (topCategory) {
+        response = `À première vue, le poste le plus lourd est ${topCategory} avec environ ${topAmount.toFixed(
           0
-        )} €. Ce n’est pas forcément “trop”, mais ça mérite surveillance. Le bon réflexe est de comparer cette catégorie à une limite claire et de réduire les petites dépenses répétées.`;
+        )} €. Ce n’est pas forcément mauvais si c’est une charge nécessaire, mais si c’est une dépense variable, c’est là qu’il faut agir en premier.`;
       } else {
         response =
-          "Je ne vois pas encore assez de dépenses enregistrées pour juger correctement. Ajoute quelques opérations et je pourrai te donner un avis plus précis.";
+          "Je n’ai pas encore assez de dépenses détaillées pour juger finement, mais le bon réflexe est de comparer chaque catégorie à une limite mensuelle ou quotidienne.";
       }
     } else if (
       lowerMessage.includes("budget") ||
       lowerMessage.includes("gestion") ||
       lowerMessage.includes("tu penses quoi") ||
       lowerMessage.includes("avis") ||
-      lowerMessage.includes("en général")
+      lowerMessage.includes("en général") ||
+      lowerMessage.includes("analyse")
     ) {
-      const topThree = sortedExpenses
-        .slice(0, 3)
-        .map(([category, amount]) => `${category} (${amount.toFixed(0)} €)`)
-        .join(", ");
-
-      response = `Globalement, tu as ${income.toFixed(
-        0
-      )} € de revenus enregistrés et ${expenses.toFixed(
-        0
-      )} € de dépenses, soit un reste affiché de ${balance.toFixed(
-        0
-      )} €. Après charges fixes estimées à ${recurringTotal.toFixed(
-        0
-      )} €, ton reste réel est autour de ${realBalance.toFixed(
-        0
-      )} €. ${
-        topThree
-          ? `Tes plus gros postes sont : ${topThree}.`
-          : "Je n’ai pas encore assez de catégories de dépenses pour identifier les postes les plus lourds."
-      } Mon conseil : fixe des limites sur les catégories variables et surveille surtout les dépenses répétées du quotidien.`;
+      response = `${globalSummary()} ${actionAdvice()}`;
     } else if (
       lowerMessage.includes("économiser") ||
       lowerMessage.includes("epargner") ||
@@ -457,15 +504,15 @@ export async function personalCopilot(req, res) {
       lowerMessage.includes("mettre de côté")
     ) {
       if (realBalance > 0) {
-        response = `Tu pourrais potentiellement mettre de côté environ ${realBalance.toFixed(
+        response = `Tu pourrais potentiellement mettre de côté une partie de ton reste, mais je te conseille de rester prudent. Sur ${realBalance.toFixed(
           0
-        )} € ce mois-ci si tes dépenses restent stables. Pour rester prudent, commence par viser une épargne plus petite, par exemple ${Math.max(
+        )} € disponibles environ, vise d’abord ${Math.max(
           20,
           Math.floor(realBalance * 0.3)
-        ).toFixed(0)} €, puis augmente progressivement.`;
+        ).toFixed(0)} € d’épargne, puis ajuste selon tes dépenses réelles.`;
       } else {
         response =
-          "Pour l’instant, tes charges fixes et dépenses semblent absorber ton reste disponible. Avant d’épargner, il faut réduire une ou deux dépenses variables.";
+          "Pour l’instant, ton reste réel semble trop serré pour épargner sereinement. Priorité : réduire une dépense variable avant de te fixer un objectif d’épargne.";
       }
     } else if (
       lowerMessage.includes("dépense") ||
@@ -474,20 +521,14 @@ export async function personalCopilot(req, res) {
       if (sortedExpenses.length > 0) {
         response = `Tes plus grosses dépenses actuelles sont : ${sortedExpenses
           .slice(0, 3)
-          .map(([category, amount]) => `${category} (${amount.toFixed(0)} €)`)
+          .map(([category, amount]) => `${category} (${Number(amount).toFixed(0)} €)`)
           .join(", ")}. C’est là qu’il faut regarder en priorité si tu veux améliorer ton budget.`;
       } else {
         response =
           "Je ne vois pas encore assez de dépenses enregistrées pour faire une analyse utile.";
       }
     } else {
-      response = `Je peux déjà te dire ceci : tu as ${income.toFixed(
-        0
-      )} € de revenus, ${expenses.toFixed(
-        0
-      )} € de dépenses et environ ${balance.toFixed(
-        0
-      )} € de reste affiché. Pose-moi une question plus précise sur ton reste à vivre, tes dépenses, la bouffe, l’épargne ou ton budget global.`;
+      response = `${globalSummary()} ${actionAdvice()}`;
     }
 
     res.json({
