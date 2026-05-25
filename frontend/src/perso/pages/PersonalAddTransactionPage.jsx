@@ -4,6 +4,29 @@ import { PlusCircle } from "lucide-react";
 
 import { createPersonalTransaction } from "../api/personalApi";
 
+const EXPENSE_CATEGORIES = [
+  "Maison",
+  "Bouffe",
+  "Courses",
+  "Transport",
+  "Enfants",
+  "Santé",
+  "Dettes",
+  "Abonnements",
+  "Famille",
+  "Loisirs",
+  "Divers",
+];
+
+const INCOME_CATEGORIES = [
+  "Salaire",
+  "Ipsos",
+  "Prime",
+  "Tontine",
+  "Projet",
+  "Autre revenu",
+];
+
 function localDateISO(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -14,28 +37,40 @@ function localDateISO(date = new Date()) {
 
 export default function PersonalAddTransactionPage() {
   const { user } = useAuth();
-
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     label: "",
     amount: "",
-    category: "",
+    category: "Bouffe",
     type: "expense",
     transaction_date: localDateISO(),
   });
+
+  const categories =
+    form.type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
   function updateField(key, value) {
     setForm((current) => ({
       ...current,
       [key]: value,
+      ...(key === "type"
+        ? {
+            category: value === "income" ? "Salaire" : "Bouffe",
+          }
+        : {}),
     }));
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (!form.label || !form.amount || !form.category) {
+    if (!user?.id) {
+      alert("Utilisateur introuvable. Reconnecte-toi puis réessaie.");
+      return;
+    }
+
+    if (!form.label.trim() || !form.amount || !form.category) {
       alert("Veuillez remplir tous les champs");
       return;
     }
@@ -45,11 +80,11 @@ export default function PersonalAddTransactionPage() {
 
       await createPersonalTransaction({
         userId: user.id,
-        label: form.label,
+        label: form.label.trim(),
         amount: Number(form.amount),
         category: form.category,
         type: form.type,
-        transaction_date: form.transaction_date,
+        transaction_date: form.transaction_date || localDateISO(),
       });
 
       alert("Opération ajoutée avec succès ✅");
@@ -57,7 +92,7 @@ export default function PersonalAddTransactionPage() {
       setForm({
         label: "",
         amount: "",
-        category: "",
+        category: "Bouffe",
         type: "expense",
         transaction_date: localDateISO(),
       });
@@ -93,6 +128,32 @@ export default function PersonalAddTransactionPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1">
+            <button
+              type="button"
+              onClick={() => updateField("type", "expense")}
+              className={`rounded-xl px-3 py-3 text-sm font-black ${
+                form.type === "expense"
+                  ? "bg-slate-950 text-white"
+                  : "text-slate-600"
+              }`}
+            >
+              Dépense
+            </button>
+
+            <button
+              type="button"
+              onClick={() => updateField("type", "income")}
+              className={`rounded-xl px-3 py-3 text-sm font-black ${
+                form.type === "income"
+                  ? "bg-slate-950 text-white"
+                  : "text-slate-600"
+              }`}
+            >
+              Revenu
+            </button>
+          </div>
+
           <div>
             <label className="mb-2 block text-sm font-black text-slate-700">
               Libellé
@@ -101,7 +162,11 @@ export default function PersonalAddTransactionPage() {
             <input
               value={form.label}
               onChange={(e) => updateField("label", e.target.value)}
-              placeholder="Ex : Courses Carrefour"
+              placeholder={
+                form.type === "income"
+                  ? "Ex : Salaire Lidl"
+                  : "Ex : Repas, courses, transport..."
+              }
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm outline-none transition focus:border-slate-950"
             />
           </div>
@@ -114,57 +179,47 @@ export default function PersonalAddTransactionPage() {
 
               <input
                 type="number"
+                min="0"
+                step="0.01"
                 value={form.amount}
                 onChange={(e) => updateField("amount", e.target.value)}
-                placeholder="0"
+                placeholder="Ex : 10"
                 className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm outline-none transition focus:border-slate-950"
               />
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-black text-slate-700">
-                Type
-              </label>
-
-              <select
-                value={form.type}
-                onChange={(e) => updateField("type", e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm outline-none transition focus:border-slate-950"
-              >
-                <option value="expense">Dépense</option>
-                <option value="income">Revenu</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2">
             <div>
               <label className="mb-2 block text-sm font-black text-slate-700">
                 Catégorie
               </label>
 
-              <input
+              <select
                 value={form.category}
                 onChange={(e) => updateField("category", e.target.value)}
-                placeholder="Ex : Bouffe"
                 className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm outline-none transition focus:border-slate-950"
-              />
+              >
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
+          </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-black text-slate-700">
-                Date
-              </label>
+          <div>
+            <label className="mb-2 block text-sm font-black text-slate-700">
+              Date
+            </label>
 
-              <input
-                type="date"
-                value={form.transaction_date}
-                onChange={(e) =>
-                  updateField("transaction_date", e.target.value)
-                }
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm outline-none transition focus:border-slate-950"
-              />
-            </div>
+            <input
+              type="date"
+              value={form.transaction_date}
+              onChange={(e) =>
+                updateField("transaction_date", e.target.value)
+              }
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm outline-none transition focus:border-slate-950"
+            />
           </div>
 
           <button
@@ -173,10 +228,7 @@ export default function PersonalAddTransactionPage() {
             className="flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <PlusCircle className="h-5 w-5" />
-
-            {loading
-              ? "Ajout en cours..."
-              : "Ajouter l’opération"}
+            {loading ? "Ajout en cours..." : "Ajouter l’opération"}
           </button>
         </form>
       </div>
