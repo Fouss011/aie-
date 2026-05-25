@@ -13,6 +13,7 @@ import PersonalTransactionsPage from "./perso/pages/PersonalTransactionsPage";
 import PersonalBudgetsPage from "./perso/pages/PersonalBudgetsPage";
 import PersonalRecurringExpensesPage from "./perso/pages/PersonalRecurringExpensesPage";
 import PersonalSavingsPage from "./perso/pages/PersonalSavingsPage";
+import PersonalAddTransactionPage from "./perso/pages/PersonalAddTransactionPage";
 
 import { useAuth } from "./context/AuthProvider";
 
@@ -80,7 +81,7 @@ localStorage.setItem("monyva_active_page", nextPage);
         return <PersonalDashboardPage />;
 
       case "personal-add-operation":
-        return <PersonalDashboardPage focusForm />;
+        return <PersonalAddTransactionPage />;
 
       case "personal-transactions":
         return <PersonalTransactionsPage />;

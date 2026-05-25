@@ -11,6 +11,7 @@ import {
   BriefcaseBusiness,
   PiggyBank,
   ListChecks,
+  PlusCircle,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthProvider";
 
@@ -23,6 +24,7 @@ const PAGE_META = {
   notes: "Journal terrain",
 
   "personal-dashboard": "Vue d’ensemble",
+  "personal-add-operation": "Nouvelle opération",
   "personal-transactions": "Revenus et dépenses",
   "personal-budgets": "Limites mensuelles",
   "personal-savings": "Objectifs d’épargne",
@@ -37,6 +39,7 @@ const PAGE_ICONS = {
   notes: NotebookText,
 
   "personal-dashboard": UserRound,
+  "personal-add-operation": PlusCircle,
   "personal-transactions": ListChecks,
   "personal-budgets": PiggyBank,
   "personal-savings": PiggyBank,
