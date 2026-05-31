@@ -180,7 +180,7 @@ export default function ChatBox({ universe = "business" }) {
           {
             role: "assistant",
             content:
-              "🚫 Ton essai est terminé. Active ton abonnement Monyva pour continuer à utiliser le Copilot.",
+              "Le Copilot est temporairement indisponible. Réessaie plus tard.",
           },
         ]);
 

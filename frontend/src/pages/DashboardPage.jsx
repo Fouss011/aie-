@@ -153,7 +153,8 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
 
   const trialStatus = getTrialStatus(activeStructure);
-  const canUsePremium = access?.isActive ?? trialStatus.isTrialActive;
+  const ENABLE_PAYMENTS = false;
+const canUsePremium = true;
 
   const insight = useMemo(() => {
     const today = getTodayString();
@@ -288,7 +289,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-5">
-      {access && <SubscriptionBanner access={access} />}
+      {ENABLE_PAYMENTS && access && <SubscriptionBanner access={access} />}
 
       <section className="relative overflow-hidden rounded-[28px] border border-white/60 bg-slate-950 p-5 text-white shadow-[0_26px_78px_rgba(15,23,42,0.20)] sm:p-6">
         <div className="pointer-events-none absolute inset-0">
